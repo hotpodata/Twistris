@@ -1,0 +1,102 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.google.gms.google-services'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 14
+        applicationId "com.hotpodata.twistris"
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "LOGGING_ENABLED", "true"
+            buildConfigField "boolean", "IS_DEBUG_BUILD", "true"
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "LOGGING_ENABLED", "false"
+            buildConfigField "boolean", "IS_DEBUG_BUILD", "false"
+        }
+    }
+    signingConfigs {
+        def provDir = System.getenv("TWISTRIS_KEYSTORE_DIRECTORY") ?: ""
+        def twistrisKeystorePass = System.getenv("TWISTRIS_KEYSTORE_PASS") ?: ""
+        def twistrisProPass = System.getenv("TWISTRIS_PRO_PASS") ?: ""
+        twistrisProRelease {
+            storeFile file("${provDir}/twistris.keystore")
+            storePassword twistrisKeystorePass
+            keyAlias "twistris-pro-release"
+            keyPassword twistrisProPass
+        }
+
+        def twistrisFreePass = System.getenv("TWISTRIS_FREE_PASS") ?: ""
+        twistrisFreeRelease {
+            storeFile file("${provDir}/twistris.keystore")
+            storePassword twistrisKeystorePass
+            keyAlias "twistris-free-release"
+            keyPassword twistrisFreePass
+        }
+    }
+    productFlavors {
+        def freeSigning = signingConfigs.twistrisFreeRelease
+        def proSigning = signingConfigs.twistrisProRelease
+        Free {
+            applicationId "com.hotpodata.twistris.free"
+            buildConfigField "boolean", "IS_PRO", "false"
+            signingConfig freeSigning
+            resValue "string", "app_label", "Twistris"
+        }
+        Pro {
+            applicationId "com.hotpodata.twistris.pro"
+            buildConfigField "boolean", "IS_PRO", "true"
+            signingConfig proSigning
+            resValue "string", "app_label", "Twistris Pro"
+        }
+    }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':blocklib')
+    compile 'com.android.support:appcompat-v7:23.1.0'
+    compile 'com.android.support:design:23.1.0'
+    compile 'com.android.support:cardview-v7:23.1.0'
+    compile 'com.android.support:recyclerview-v7:23.1.0'
+    compile 'com.google.android.gms:play-services:8.3.0'
+    compile 'com.google.android.gms:play-services-analytics:8.3.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile 'com.android.support:multidex:1.0.0'
+    compile 'com.jakewharton.timber:timber:3.1.0'
+    compile 'io.reactivex:rxandroid:1.0.1'
+    compile 'io.reactivex:rxkotlin:0.30.1'
+    compile 'io.reactivex:rxjava:1.0.16'
+}
+buildscript {
+    ext.kotlin_version = '1.0.0-beta-4584'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
+    }
+}
+repositories {
+    mavenCentral()
+}
+

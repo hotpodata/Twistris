@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Twistris</string>
+
+    <string name="left">Left</string>
+    <string name="right">Right</string>
+    <string name="rotate_left">Rotate Left</string>
+    <string name="rotate_right">Rotate Right</string>
+    <string name="fire">Fire</string>
+
+    <string name="level_template">Level:%1$d</string>
+    <string name="score_template">Score:%1$d</string>
+    <string name="lines_template">Lines:%1$d</string>
+
+    <string name="paused">Game Paused</string>
+    <string name="resume">Resume</string>
+    <string name="restart">Restart</string>
+    <string name="start">Start</string>
+    <string name="game_over">Game Over!</string>
+    <string name="play_again">Play Again</string>
+
+    <string name="twistris">Twistris</string>
+    <string name="welcome_to_twistris">Welcome to Twistris!</string>
+    <string name="a_classic_with_a_twist">The classic game with a twist.</string>
+    <string name="how_it_works">How it works</string>
+    <string name="pieces_move_right_to_left">Pieces move from right to left.</string>
+    <string name="when_the_number_stuck">When the number of pieces stuck to the left equals the level number, the horizontal board twists clockwise.</string>
+    <string name="pieces_fall">After rotation, pieces that were stuck to the left of the horizontal board, now fall onto the vertical board in reverse order.</string>
+    <string name="lines_are_cleared">Lines are cleared, points are gained, repeat!</string>
+</resources>
