@@ -6,17 +6,20 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.widget.Toast
+import com.expedia.bookings.utils.ScreenPositionUtils
 import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
 import com.hotpodata.twistris.R
+import com.hotpodata.twistris.data.TwistrisGame
 import com.hotpodata.twistris.fragment.DialogGameOverFragment
 import com.hotpodata.twistris.fragment.DialogPauseFragment
 import com.hotpodata.twistris.fragment.DialogStartFragment
-import com.hotpodata.twistris.utils.TetrisFactory
 import com.hotpodata.twistris.interfaces.IGameController
 import com.hotpodata.twistris.utils.GridOfColorsBlockDrawer
 import kotlinx.android.synthetic.main.activity_twistris.*
@@ -38,24 +41,17 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
 
     val MAX_TICK_LENGTH_MS = 3000
     val MIN_TICK_LENGTH_MS = 300
-    val MAX_LEVEL = 10
 
-    var boardVert = Grid(8, 16)
-    var boardHoriz = Grid(12, 8)
+    //This is the board we add the upcoming piece to...
     var boardUpcoming = Grid(4, 2)
-    var activePiece: Grid = TetrisFactory.j().rotate(false)
-    var upcomingPiece: Grid = TetrisFactory.randomPiece()
-    var activeXOffset = boardHoriz.width - activePiece.width
-    var activeYOffset = (boardHoriz.height / 2f).toInt()
 
-    var subTicker: Subscription? = null
-    var tickInterpolator = DecelerateInterpolator()
+    //This is the game state, if we kill the game and come back, this should reflect where we are
+    var game = TwistrisGame()
 
-    //These are the current horizontal pieces
-    var horizPieceCoords = HashMap<Grid, Pair<Int, Int>>()
-    var horizPieces = ArrayList<Grid>()
 
     //Game state
+    var subTicker: Subscription? = null
+    var tickInterpolator = DecelerateInterpolator()
     var actionAnimator: Animator? = null
     var paused: Boolean = true
         set(pause: Boolean) {
@@ -81,22 +77,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
                 field = pause
             }
         }
-    var currentRowsDestroyed: Int = 0
-        set(lines: Int) {
-            field = lines
-            linesTv.text = getString(R.string.lines_template, lines)
-        }
-    var currentScore = 0
-        set(score: Int) {
-            field = score
-            scoreTv.text = getString(R.string.score_template, score)
-        }
-
-    var currentLevel = 1
-        set(lev: Int) {
-            field = lev
-            levelTv.text = getString(R.string.level_template, lev)
-        }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,57 +84,43 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         setSupportActionBar(toolbar);
 
         up_btn.setOnClickListener {
-            if (allowGameActions()) {
-                if (GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset, activeYOffset - 1)) {
-                    activeYOffset--
-                    updateHorizGridView()
-                }
+            if (allowGameActions() && game.actionMoveActiveUp()) {
+                bindHorizGridView()
             }
         }
         down_btn.setOnClickListener {
-            if (allowGameActions()) {
-                if (GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset, activeYOffset + 1)) {
-                    activeYOffset++
-                    updateHorizGridView()
-                }
+            if (allowGameActions() && game.actionMoveActiveDown()) {
+                bindHorizGridView()
+
             }
         }
         rotate_left_btn.setOnClickListener {
-            if (allowGameActions()) {
-                var rot = activePiece.rotate(true)
-                while (activeYOffset + rot.height > boardHoriz.height) {
-                    activeYOffset--
-                }
-                activePiece = rot
-                updateHorizGridView()
+            if (allowGameActions() && game.actionRotateActiveLeft()) {
+                bindHorizGridView()
             }
         }
         rotate_right_btn.setOnClickListener {
-            if (allowGameActions()) {
-                var rot = activePiece.rotate(false)
-                while (activeYOffset + rot.height > boardHoriz.height) {
-                    activeYOffset--
-                }
-                activePiece = rot
-                updateHorizGridView()
+            if (allowGameActions() && game.actionRotateActiveRight()) {
+                bindHorizGridView()
             }
         }
         fire_btn.setOnClickListener {
             if (allowGameActions()) {
-                performActionFire()
+                var animGame = TwistrisGame(game)
+                performActionFire(animGame)
             }
         }
         pause_btn.setOnClickListener {
             paused = !paused
         }
 
-        gridbinderview_horizontal.grid = boardHoriz
+        gridbinderview_horizontal.grid = game.boardHoriz
         gridbinderview_horizontal.blockDrawer = GridOfColorsBlockDrawer
         gridbinderview_vertical.blockDrawer = GridOfColorsBlockDrawer
         gridbinderview_upcomingpiece.blockDrawer = GridOfColorsBlockDrawer
 
-        updateHorizGridView()
-        updateVertGridView()
+        bindHorizGridView()
+        bindVertGridView()
 
         if (savedInstanceState == null) {
             var startFrag = DialogStartFragment()
@@ -168,17 +134,12 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
 
     fun subscribeToTicker() {
         unsubscribeFromTicker()
-        val interval = (MAX_TICK_LENGTH_MS - (MAX_TICK_LENGTH_MS - MIN_TICK_LENGTH_MS) * tickInterpolator.getInterpolation(currentLevel / MAX_LEVEL.toFloat())).toLong()
+        val interval = (MAX_TICK_LENGTH_MS - (MAX_TICK_LENGTH_MS - MIN_TICK_LENGTH_MS) * tickInterpolator.getInterpolation(game.currentLevel / game.MAX_LEVEL.toFloat())).toLong()
         subTicker = Observable.interval(interval, TimeUnit.MILLISECONDS)
                 .filter({ l -> allowGameActions() })//So we don't do anything
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
-                    if (!GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset - 1, activeYOffset) || GridHelper.gridsCollide(boardHoriz, activePiece, activeXOffset - 1, activeYOffset)) {
-                        pieceHitLeft()
-                    } else {
-                        activeXOffset--
-                        updateHorizGridView()
-                    }
+                    gameTick()
                 }
     }
 
@@ -186,58 +147,66 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         subTicker?.let { if (!it.isUnsubscribed) it.unsubscribe() }
     }
 
-    fun updateHorizGridView() {
-        var grid = GridHelper.copyGrid(boardHoriz)
-        GridHelper.addGrid(grid, activePiece, activeXOffset, activeYOffset)
+    fun bindGameInfo() {
+        levelTv.text = getString(R.string.level_template, game.currentLevel)
+        scoreTv.text = getString(R.string.score_template, game.currentScore)
+        linesTv.text = getString(R.string.lines_template, game.currentRowsDestroyed)
+        boardUpcoming.clear()
+        GridHelper.addGrid(boardUpcoming, game.upcomingPiece, 0, 0)
+        gridbinderview_upcomingpiece.grid = boardUpcoming
+    }
+
+    fun bindHorizGridView() {
+        var grid = GridHelper.copyGrid(game.boardHoriz)
+        GridHelper.addGrid(grid, game.activePiece, game.activeXOffset, game.activeYOffset)
         gridbinderview_horizontal.grid = grid
     }
 
-    fun updateVertGridView() {
-        var grid = GridHelper.copyGrid(boardVert)
+    fun bindVertGridView() {
+        var grid = GridHelper.copyGrid(game.boardVert)
         gridbinderview_vertical.grid = grid
     }
 
-    fun nextPiece() {
-        var newPiece = TetrisFactory.randomPiece()
-        if (newPiece.height > newPiece.width) {
-            newPiece = newPiece.rotate(false)
+
+    fun gameTick() {
+        Timber.d("tick")
+        if (game.gameIsOver) {
+            Timber.d("tick - gameIsOver")
+            unsubscribeFromTicker()
+            var frag = supportFragmentManager.findFragmentByTag(FTAG_GAME_OVER) as? DialogGameOverFragment
+            if (frag == null) {
+                frag = DialogGameOverFragment()
+            }
+            if (!frag.isAdded) {
+                frag.show(supportFragmentManager, FTAG_GAME_OVER)
+            }
+        } else if (game.gameNeedsTwist()) {
+            Timber.d("tick - gameNeedsTwist")
+            var animGame = TwistrisGame(game)
+            game.actionTwistBoard()
+            game.actionNextPiece()
+            performActionTwist(animGame)
+        } else if (game.gameNeedsNextPiece()) {
+            Timber.d("tick - gameNeedsNextPiece")
+            game.actionNextPiece()
+            bindHorizGridView()
+        } else if (!paused) {
+            Timber.d("tick - actionMoveActiveLeft")
+            if (game.actionMoveActiveLeft()) {
+                bindHorizGridView()
+            }
         }
-
-        var piece = upcomingPiece
-        activeXOffset = boardHoriz.width - piece.width
-        activeYOffset = (boardHoriz.height / 2f).toInt()
-
-        upcomingPiece = newPiece
-        boardUpcoming.clear()
-        GridHelper.addGrid(boardUpcoming, upcomingPiece, 0, 0)
-        gridbinderview_upcomingpiece.grid = boardUpcoming
-
-        activePiece = piece
-        updateHorizGridView()
-        subscribeToTicker()
-    }
-
-    fun pieceHitLeft() {
-        unsubscribeFromTicker()
-        recordActivePiece()
-        if (horizPieces.size % currentLevel == 0) {
-            performActionAnim()
-        } else {
-            nextPiece()
+        if (subTicker?.isUnsubscribed ?: true) {
+            subscribeToTicker()
         }
+        bindGameInfo()
     }
 
-    fun performActionFire() {
+    fun performActionFire(animGame: TwistrisGame) {
         unsubscribeFromTicker()
-        var anim = genFlyLeftAnim()
-        actionAnimator = anim
-        anim.start()
-    }
-
-    fun performActionAnim() {
-        val animatorSet = AnimatorSet()
-        animatorSet.playSequentially(genTwistAnimation(), genHorizDropAnimation(), genHorizFlyInFromRightAnimation())
-        animatorSet.addListener(object : AnimatorListenerAdapter() {
+        game.actionMoveActiveAllTheWayLeft()
+        var anim = genFlyLeftAnim(animGame)
+        anim.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 done()
             }
@@ -248,30 +217,46 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
 
             fun done() {
                 actionAnimator = null
+                gameTick()
+            }
+        })
+        actionAnimator = anim
+        anim.start()
+    }
+
+    fun performActionTwist(animGame: TwistrisGame) {
+        val animatorSet = AnimatorSet()
+        animatorSet.playSequentially(genTwistAnimation(), genHorizDropAnimation(animGame), genHorizFlyInFromRightAnimation(animGame, animGame.currentLevel != game.currentLevel))
+        animatorSet.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                done()
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+                done()
+            }
+
+            fun done() {
+                bindHorizGridView()
+                bindVertGridView()
+                actionAnimator = null
             }
         })
         actionAnimator = animatorSet
         animatorSet.start()
     }
 
-    fun recordActivePiece() {
-        horizPieces.add(activePiece)
-        horizPieceCoords.put(activePiece, Pair(activeXOffset, activeYOffset))
-        GridHelper.addGrid(boardHoriz, activePiece, activeXOffset, activeYOffset)
-        updateHorizGridView()
-    }
-
-    fun genFlyLeftAnim(): Animator {
-        var startX = activeXOffset
+    fun genFlyLeftAnim(animGame: TwistrisGame): Animator {
+        var startX = animGame.activeXOffset
         var endX = startX
         //Sink
-        while (GridHelper.gridInBounds(boardHoriz, activePiece, endX - 1, activeYOffset) && !GridHelper.gridsCollide(boardHoriz, activePiece, endX - 1, activeYOffset)) {
+        while (GridHelper.gridInBounds(animGame.boardHoriz, animGame.activePiece, endX - 1, animGame.activeYOffset) && !GridHelper.gridsCollide(animGame.boardHoriz, animGame.activePiece, endX - 1, animGame.activeYOffset)) {
             endX--
         }
-        var anim = genPieceMoveAnim(gridbinderview_horizontal, activePiece, startX, activeYOffset, endX, activeYOffset)
+        var anim = genPieceMoveAnim(gridbinderview_horizontal, animGame.activePiece, startX, animGame.activeYOffset, endX, animGame.activeYOffset)
         anim.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
-                gridbinderview_horizontal.grid = boardHoriz//We let the animator draw the piece
+                gridbinderview_horizontal.grid = animGame.boardHoriz//We let the animator draw the piece
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -283,9 +268,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
             }
 
             fun done() {
-                currentScore += (10 * activeXOffset - endX)//10 points per space flown
-                activeXOffset = endX
-                pieceHitLeft()
+                bindHorizGridView()
+                bindVertGridView()
+                actionAnimator = null
             }
         })
         return anim
@@ -295,32 +280,32 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         return !paused && !(actionAnimator?.isRunning ?: false)
     }
 
-    fun genHorizDropAnimation(): Animator {
+    fun genHorizDropAnimation(animGame: TwistrisGame): Animator {
         var animators = ArrayList<Animator>()
 
         //The working board is twice as tall as the display board, so pieces can be added over the bounds
-        var workingBoard = Grid(boardVert.width, boardVert.height * 2)
-        GridHelper.addGrid(workingBoard, GridHelper.copyGrid(boardVert), 0, boardVert.height);
+        var workingBoard = Grid(animGame.boardVert.width, animGame.boardVert.height * 2)
+        GridHelper.addGrid(workingBoard, GridHelper.copyGrid(animGame.boardVert), 0, animGame.boardVert.height);
         Timber.d("1 workingBoard:" + workingBoard.getPrintString(" - ", " * "))
 
         var duration = 250L
 
         //This builds up the drop animators
-        for (piece in horizPieces.reversed()) {
-            var coords = horizPieceCoords[piece]
+        for (item in animGame.horizPieces.reversed()) {
+            var coords = item.second
             if (coords != null) {
-                var rotated = piece.rotate(false)
-                var startX = boardHoriz.height - coords.second - rotated.width
-                var startY = coords.first + boardVert.height
+                var rotated = item.first.rotate(false)
+                var startX = animGame.boardHoriz.height - coords.second - rotated.width
+                var startY = coords.first + animGame.boardVert.height
                 var endY = 0
                 while (GridHelper.gridInBounds(workingBoard, rotated, startX, endY + 1) && !GridHelper.gridsCollide(workingBoard, rotated, startX, endY + 1)) {
                     endY++
                 }
 
                 GridHelper.addGrid(workingBoard, rotated, startX, endY)
-                var pieceDoneBoard = GridHelper.copyGridPortion(workingBoard, 0, boardVert.height, boardVert.width, workingBoard.height)
+                var pieceDoneBoard = GridHelper.copyGridPortion(workingBoard, 0, animGame.boardVert.height, animGame.boardVert.width, workingBoard.height)
 
-                var pieceAnim = genPieceMoveAnim(gridbinderview_vertical, rotated, startX, startY - boardVert.height, startX, endY - boardVert.height)
+                var pieceAnim = genPieceMoveAnim(gridbinderview_vertical, rotated, startX, startY - animGame.boardVert.height, startX, endY - animGame.boardVert.height)
                 pieceAnim.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
                         done()
@@ -365,10 +350,10 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
 
             //Build up the row slide out animations
             var rowRemoveAnims = ArrayList<Animator>()
-            var rowRemovedBoard = GridHelper.copyGridPortion(workingBoard, 0, boardVert.height, boardVert.width, workingBoard.height)
+            var rowRemovedBoard = GridHelper.copyGridPortion(workingBoard, 0, animGame.boardVert.height, animGame.boardVert.width, workingBoard.height)
             for (i in shifts.indices) {
                 if (shifts[i] == -1) {
-                    var vertBoardYCoordRowRemove = i - boardVert.height
+                    var vertBoardYCoordRowRemove = i - animGame.boardVert.height
                     var rowGrid = GridHelper.copyGridPortion(workingBoard, 0, i, workingBoard.width, i + 1)
                     var rowPos = binderView.getSubGridPosition(rowGrid, 0, vertBoardYCoordRowRemove)
 
@@ -386,7 +371,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
 
                     //Row removed board
 
-                    for (i in 0..boardVert.width - 1) {
+                    for (i in 0..animGame.boardVert.width - 1) {
                         rowRemovedBoard.remove(i, vertBoardYCoordRowRemove)
                     }
 
@@ -441,7 +426,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         animatorSet.playSequentially(dropAnimators, rowRemovalAnimators)
         animatorSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
-                gridbinderview_horizontal.alpha = 0f//Maybe we could find a better place for this?
+                horiz_container.alpha = 0f//Maybe we could find a better place for this?
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -453,55 +438,75 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
             }
 
             fun done() {
-                currentScore += (50 * shiftVal * shiftVal)
-                currentRowsDestroyed += shiftVal
-                var level = currentRowsDestroyed / 10 + 1
-                currentLevel = level
-
-                if(!workingBoard.rowEmpty(boardVert.height - 1)){
-                    unsubscribeFromTicker()
-                    var frag = DialogGameOverFragment()
-                    frag.show(supportFragmentManager,FTAG_GAME_OVER)
-                }
-                boardVert = GridHelper.copyGridPortion(workingBoard, 0, boardVert.height, boardVert.width, workingBoard.height)
-                updateVertGridView()
-
-
+                bindVertGridView()
             }
-
         })
         return animatorSet
     }
 
-    fun genHorizFlyInFromRightAnimation(): Animator {
-        var horiBinder = gridbinderview_horizontal
+    fun genHorizFlyInFromRightAnimation(animGame: TwistrisGame, includeLevelBlurb: Boolean): Animator {
+        var animSet = AnimatorSet()
+
+        var horiBinder = horiz_container
         var animTransX = ObjectAnimator.ofFloat(horiBinder, "translationX", horiBinder.width.toFloat(), 0f)
         animTransX.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
-                horizPieces.clear()
-                horizPieceCoords.clear()
-                boardHoriz.clear()
-                updateHorizGridView()
-                updateVertGridView()
-                nextPiece()
-
+                bindHorizGridView()
                 horiBinder.scaleX = 1f
                 horiBinder.scaleY = 1f
                 horiBinder.translationY = 0f
                 horiBinder.translationX = horiBinder.width.toFloat()
                 horiBinder.rotation = 0f
-                gridbinderview_horizontal.alpha = 1f//Maybe we could find a better place for this?
+                horiz_container.alpha = 1f//Maybe we could find a better place for this?
             }
-
         })
         animTransX.interpolator = DecelerateInterpolator()
-        return animTransX
+
+        Timber.d("LevelMessage animGame.currentLevel:" + animGame.currentLevel + " game.currentLevel:" + game.currentLevel)
+        if (includeLevelBlurb) {
+            var lvlTxtAnimAlpha = ObjectAnimator.ofFloat(level_up_container, "alpha", 1f, 0f)
+            lvlTxtAnimAlpha.interpolator = AccelerateInterpolator()
+            var lvlTxtAnimScaleX = ObjectAnimator.ofFloat(level_up_container, "scaleX", 1f, 0.4f)
+            var lvlTxtAnimScaleY = ObjectAnimator.ofFloat(level_up_container, "scaleY", 1f, 0.4f)
+
+            val lvlTxtAnim = AnimatorSet()
+            lvlTxtAnim.playTogether(lvlTxtAnimAlpha, lvlTxtAnimScaleX, lvlTxtAnimScaleY)
+            lvlTxtAnim.setDuration(if (game.currentLevel == 2) 2500 else 1000)
+            lvlTxtAnim.interpolator = AccelerateInterpolator()
+            animSet.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    level_up_tv.text = getString(R.string.level_template, game.currentLevel)
+                    level_up_blurb_tv.text = getString(R.string.level_up_blurb_template, game.currentLevel)
+                    level_up_container.visibility = View.VISIBLE
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    done()
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                    done()
+                }
+
+                fun done() {
+                    level_up_container.visibility = View.INVISIBLE
+                    level_up_container.alpha = 1f
+                    level_up_container.scaleX = 1f
+                    level_up_container.scaleY = 1f
+                }
+            })
+            animSet.playSequentially(animTransX, lvlTxtAnim)
+        } else {
+            animSet.play(animTransX)
+        }
+
+        return animSet
     }
 
     fun genTwistAnimation(): Animator {
         var animSet = AnimatorSet()
         var vertBinder = gridbinderview_vertical
-        var horiBinder = gridbinderview_horizontal
+        var horiBinder = horiz_container
         if (vertBinder != null && horiBinder != null) {
             var scaleRatio = vertBinder.width / horiBinder.height.toFloat()
             var horiCenterY = horiBinder.top + horiBinder.height / 2f
@@ -523,11 +528,14 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         var startPos = binderView.getSubGridPosition(p, startOffsetX, startOffsetY)
         var endPos = binderView.getSubGridPosition(p, endOffsetX, endOffsetY)
 
+        var binderViewRect = ScreenPositionUtils.getGlobalScreenPosition(binderView)
+        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, outer_container)
+
         //Set up the view
-        var startX = startPos.left + binderView.left
-        var startY = startPos.top + binderView.top
-        var endX = endPos.left + binderView.left
-        var endY = endPos.top + binderView.top
+        var startX = startPos.left + binderViewOuterRect.left
+        var startY = startPos.top + binderViewOuterRect.top
+        var endX = endPos.left + binderViewOuterRect.left
+        var endY = endPos.top + binderViewOuterRect.top
 
         //Set up the view
         var animView = GridBinderView(this)
@@ -588,25 +596,14 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
     }
 
     override fun resetGame() {
+        game = TwistrisGame()
         actionAnimator?.cancel()
         actionAnimator = null
-
-        boardVert = Grid(8, 16)
-        boardHoriz = Grid(12, 8)
         boardUpcoming = Grid(4, 2)
-        activePiece = TetrisFactory.j().rotate(false)
-        upcomingPiece = TetrisFactory.randomPiece()
-        activeXOffset = boardHoriz.width - activePiece.width
-        activeYOffset = (boardHoriz.height / 2f).toInt()
+        bindHorizGridView()
+        bindVertGridView()
 
-        horizPieceCoords.clear()
-        horizPieces.clear()
-
-        currentRowsDestroyed = 0
-        currentScore = 0
-        currentLevel = 1
-
-        updateHorizGridView()
-        updateVertGridView()
+        //TODO: Show real ad
+        Toast.makeText(this, "Showing ad!", Toast.LENGTH_SHORT).show()
     }
 }

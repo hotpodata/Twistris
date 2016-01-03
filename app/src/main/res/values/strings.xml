@@ -10,6 +10,7 @@
     <string name="level_template">Level:%1$d</string>
     <string name="score_template">Score:%1$d</string>
     <string name="lines_template">Lines:%1$d</string>
+    <string name="level_up_blurb_template">Beware! %1$d pieces at once!</string>
 
     <string name="paused">Game Paused</string>
     <string name="resume">Resume</string>
