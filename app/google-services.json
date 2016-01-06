@@ -1,60 +1,43 @@
 {
   "project_info": {
-    "project_id": "podata-7264a",
-    "project_number": "815156999620",
-    "name": "PoData"
+    "project_id": "twistris-52973131",
+    "project_number": "573770405666",
+    "name": "Twistris"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:815156999620:android:249ef8619bc7a3a8",
-        "client_id": "android:com.hotpodata.podata.android.free",
-        "client_type": 1,
-        "android_client_info": {
-          "package_name": "com.hotpodata.podata.android.free"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [],
-      "services": {
-        "analytics_service": {
-          "status": 2,
-          "analytics_property": {
-            "tracking_id": "UA-70379200-9"
-          }
-        },
-        "cloud_messaging_service": {
-          "status": 1,
-          "apns_config": []
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "google_signin_service": {
-          "status": 1
-        },
-        "ads_service": {
-          "status": 1
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:815156999620:android:ff9b030448f18643",
+        "mobilesdk_app_id": "1:573770405666:android:ff9b030448f18643",
         "client_id": "android:com.hotpodata.twistris",
         "client_type": 1,
         "android_client_info": {
           "package_name": "com.hotpodata.twistris"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "573770405666-0n9bsrik2j8bsvq5hpjalj2gh8fk1t3o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hotpodata.twistris",
+            "certificate_hash": "9E847FF30F99E5EC5A7CDDAA487E7AD3CCABB7B2"
+          }
+        },
+        {
+          "client_id": "573770405666-ov0s555e75q96vpsf03dacm01uhcf47h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hotpodata.twistris",
+            "certificate_hash": "53FD9FBCC1D87A52E4A5E0E2FEF48C69141840D9"
+          }
+        }
+      ],
       "api_key": [],
       "services": {
         "analytics_service": {
           "status": 2,
           "analytics_property": {
-            "tracking_id": "UA-70379200-10"
+            "tracking_id": "UA-70379200-11"
           }
         },
         "cloud_messaging_service": {

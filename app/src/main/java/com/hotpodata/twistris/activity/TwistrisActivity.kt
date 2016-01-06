@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
@@ -12,6 +13,9 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import com.expedia.bookings.utils.ScreenPositionUtils
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.games.Games
 import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
@@ -21,6 +25,7 @@ import com.hotpodata.twistris.fragment.DialogGameOverFragment
 import com.hotpodata.twistris.fragment.DialogPauseFragment
 import com.hotpodata.twistris.fragment.DialogStartFragment
 import com.hotpodata.twistris.interfaces.IGameController
+import com.hotpodata.twistris.utils.BaseGameUtils
 import com.hotpodata.twistris.utils.GridOfColorsBlockDrawer
 import kotlinx.android.synthetic.main.activity_twistris.*
 import rx.Observable
@@ -33,7 +38,8 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by jdrotos on 12/20/15.
  */
-class TwistrisActivity : AppCompatActivity(), IGameController {
+class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     val FTAG_PAUSE = "FTAG_PAUSE"
     val FTAG_START = "FTAG_START"
@@ -48,6 +54,25 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
     //This is the game state, if we kill the game and come back, this should reflect where we are
     var game = TwistrisGame()
 
+    //Sign in stuff
+    val RC_SIGN_IN = 9001
+    var resolvingConnectionFailure = false
+    var autoStartSignInFlow = true
+    var signInClicked = false;
+
+    private var _googleApiClient: GoogleApiClient? = null
+    val googleApiClient: GoogleApiClient
+        get() {
+            if (_googleApiClient == null) {
+                _googleApiClient = GoogleApiClient.Builder(this)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .addApi(Games.API)
+                        .addScope(Games.SCOPE_GAMES)
+                        .build();
+            }
+            return _googleApiClient!!
+        }
 
     //Game state
     var subTicker: Subscription? = null
@@ -73,6 +98,10 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
                         subscribeToTicker()
                     }
                     pause_btn.setImageResource(R.drawable.ic_pause_24dp)
+                    var pauseFrag: DialogPauseFragment? = supportFragmentManager.findFragmentByTag(FTAG_PAUSE) as DialogPauseFragment?
+                    if (pauseFrag?.isAdded ?: false) {
+                        pauseFrag?.dismiss()
+                    }
                 }
                 field = pause
             }
@@ -82,6 +111,25 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_twistris)
         setSupportActionBar(toolbar);
+
+        sign_in_button.setOnClickListener {
+            Timber.d("SignIn - clicked")
+            pauseGame()
+            signInClicked = true;
+            googleApiClient.connect();
+        }
+
+        sign_out_button.setOnClickListener {
+            Timber.d("SignIn - signout clicked")
+            signInClicked = false
+            autoStartSignInFlow = false
+            if (googleApiClient.isConnected()) {
+                Games.signOut(googleApiClient);
+                googleApiClient.disconnect();
+            }
+            sign_in_button.visibility = View.VISIBLE
+            sign_out_button.visibility = View.GONE
+        }
 
         up_btn.setOnClickListener {
             if (allowGameActions() && game.actionMoveActiveUp()) {
@@ -125,6 +173,32 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         if (savedInstanceState == null) {
             var startFrag = DialogStartFragment()
             startFrag.show(supportFragmentManager, FTAG_START)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (autoStartSignInFlow) {
+            googleApiClient.connect();
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        googleApiClient.disconnect()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
+        if (requestCode == RC_SIGN_IN) {
+            signInClicked = false;
+            resolvingConnectionFailure = false;
+            if (resultCode == RESULT_OK) {
+                googleApiClient.connect();
+            } else {
+                BaseGameUtils.showActivityResultError(this,
+                        requestCode, resultCode, R.string.signin_error);
+            }
         }
     }
 
@@ -172,6 +246,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
         Timber.d("tick")
         if (game.gameIsOver) {
             Timber.d("tick - gameIsOver")
+            //Games.Leaderboards.submitScore(mGoogleApiClient, getString(R.string.leaderboard_alltimehighscores_id), game.currentScore);
             unsubscribeFromTicker()
             var frag = supportFragmentManager.findFragmentByTag(FTAG_GAME_OVER) as? DialogGameOverFragment
             if (frag == null) {
@@ -605,5 +680,51 @@ class TwistrisActivity : AppCompatActivity(), IGameController {
 
         //TODO: Show real ad
         Toast.makeText(this, "Showing ad!", Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * SIGN IN STUFF
+     */
+
+    override fun onConnected(connectionHint: Bundle?) {
+        Timber.d("SignIn - onConnected")
+        sign_in_button.visibility = View.GONE
+        sign_out_button.visibility = View.VISIBLE
+        if (paused) {
+            resumeGame()
+        }
+    }
+
+    override fun onConnectionSuspended(p0: Int) {
+        Timber.d("SignIn - onConnectionSuspended")
+        googleApiClient.connect()
+    }
+
+    override fun onConnectionFailed(result: ConnectionResult?) {
+        Timber.d("SignIn - onConnectionFailed")
+        if (resolvingConnectionFailure) {
+            // already resolving
+            return
+        }
+
+        // if the sign-in button was clicked or if auto sign-in is enabled,
+        // launch the sign-in flow
+        if (signInClicked || autoStartSignInFlow) {
+            autoStartSignInFlow = false
+            signInClicked = false
+            resolvingConnectionFailure = true
+
+            // Attempt to resolve the connection failure using BaseGameUtils.
+            // The R.string.signin_other_error value should reference a generic
+            // error string in your strings.xml file, such as "There was
+            // an issue with sign-in, please try again later."
+            if (!BaseGameUtils.resolveConnectionFailure(this,
+                    googleApiClient, result,
+                    RC_SIGN_IN, getString(R.string.sign_in_failed))) {
+                resolvingConnectionFailure = false
+            }
+        }
+
+
     }
 }
