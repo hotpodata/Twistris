@@ -21,6 +21,7 @@
     <string name="paused">Game Paused</string>
     <string name="resume">Resume</string>
     <string name="restart">Restart</string>
+    <string name="start_over">Start Over</string>
     <string name="start">Start</string>
     <string name="game_over">Game Over!</string>
     <string name="play_again">Play Again</string>

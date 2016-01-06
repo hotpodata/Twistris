@@ -126,166 +126,223 @@
         <FrameLayout
             android:id="@+id/outer_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#546E7A">
+            android:layout_height="match_parent">
 
-            <LinearLayout
+            <FrameLayout
+                android:id="@+id/game_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <com.hotpodata.blocklib.view.GridBinderView
-                    android:id="@+id/gridbinderview_vertical"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="72dp"
-                    android:layout_marginRight="72dp"
-                    android:layout_weight="8"
-                    android:background="#E3F2FD"
-                    android:elevation="8dp" />
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <FrameLayout
-                    android:id="@+id/horiz_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="32dp"
-                    android:layout_weight="5"
-                    android:background="#DDE3F2FD"
-                    android:elevation="16dp">
-
-                    <com.hotpodata.blocklib.view.GridBinderView
-                        android:id="@+id/gridbinderview_horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-
-                    <LinearLayout
-                        android:id="@+id/level_up_container"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="72dp"
-                        android:layout_marginRight="72dp"
-                        android:gravity="center_horizontal"
-                        android:orientation="vertical"
-                        android:visibility="invisible">
-
-                        <TextView
-                            android:id="@+id/level_up_tv"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:text="@string/level_template"
-                            android:textColor="@color/colorAccent"
-                            android:textSize="42dp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/level_up_blurb_tv"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:text="@string/level_up_blurb_template"
-                            android:textColor="@color/colorAccent"
-                            android:textSize="22dp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                </FrameLayout>
+                android:background="#546E7A">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal">
 
+                    <com.hotpodata.blocklib.view.GridBinderView
+                        android:id="@+id/gridbinderview_vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="72dp"
+                        android:layout_marginRight="72dp"
+                        android:layout_weight="8"
+                        android:background="#E3F2FD"
+                        android:elevation="8dp" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:id="@+id/horiz_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="32dp"
+                        android:layout_weight="5"
+                        android:background="#DDE3F2FD"
+                        android:elevation="16dp">
+
+                        <com.hotpodata.blocklib.view.GridBinderView
+                            android:id="@+id/gridbinderview_horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
+                        <LinearLayout
+                            android:id="@+id/level_up_container"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="72dp"
+                            android:layout_marginRight="72dp"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:visibility="invisible">
+
+                            <TextView
+                                android:id="@+id/level_up_tv"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:text="@string/level_template"
+                                android:textColor="@color/colorAccent"
+                                android:textSize="42dp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/level_up_blurb_tv"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:text="@string/level_up_blurb_template"
+                                android:textColor="@color/colorAccent"
+                                android:textSize="22dp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                    </FrameLayout>
+
                     <LinearLayout
-                        android:id="@+id/left_btn_container"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="2"
-                        android:background="@color/btn_container"
-                        android:gravity="center_horizontal|bottom"
-                        android:orientation="vertical">
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="6"
+                        android:orientation="horizontal">
 
-                        <android.support.design.widget.FloatingActionButton
-                            android:id="@+id/fire_btn"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_left_24dp"
-                            android:tint="@color/btn_icon"
-                            app:backgroundTint="@color/material_deep_orange" />
+                        <LinearLayout
+                            android:id="@+id/left_btn_container"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:background="@color/btn_container"
+                            android:gravity="center_horizontal|bottom"
+                            android:orientation="vertical">
 
-                        <android.support.design.widget.FloatingActionButton
-                            android:id="@+id/rotate_left_btn"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_rotate_left_24dp"
-                            android:tint="@color/btn_icon"
-                            app:backgroundTint="@color/material_purple" />
+                            <android.support.design.widget.FloatingActionButton
+                                android:id="@+id/fire_btn"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_left_24dp"
+                                android:tint="@color/btn_icon"
+                                app:backgroundTint="@color/material_deep_orange" />
 
-                        <android.support.design.widget.FloatingActionButton
-                            android:id="@+id/rotate_right_btn"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_rotate_right_24dp"
-                            android:tint="@color/btn_icon"
-                            app:backgroundTint="@color/material_purple" />
-                    </LinearLayout>
+                            <android.support.design.widget.FloatingActionButton
+                                android:id="@+id/rotate_left_btn"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_rotate_left_24dp"
+                                android:tint="@color/btn_icon"
+                                app:backgroundTint="@color/material_purple" />
 
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="8" />
+                            <android.support.design.widget.FloatingActionButton
+                                android:id="@+id/rotate_right_btn"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_rotate_right_24dp"
+                                android:tint="@color/btn_icon"
+                                app:backgroundTint="@color/material_purple" />
+                        </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/right_btn_container"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="2"
-                        android:background="@color/btn_container"
-                        android:gravity="center_horizontal|bottom"
-                        android:orientation="vertical">
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="8" />
 
-                        <android.support.design.widget.FloatingActionButton
-                            android:id="@+id/pause_btn"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_play_arrow_24dp"
-                            android:tint="@color/btn_icon"
-                            app:backgroundTint="@color/material_red" />
+                        <LinearLayout
+                            android:id="@+id/right_btn_container"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:background="@color/btn_container"
+                            android:gravity="center_horizontal|bottom"
+                            android:orientation="vertical">
 
-                        <android.support.design.widget.FloatingActionButton
-                            android:id="@+id/up_btn"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_keyboard_arrow_up_24dp"
-                            android:tint="@color/btn_icon"
-                            app:backgroundTint="@color/material_green" />
+                            <android.support.design.widget.FloatingActionButton
+                                android:id="@+id/pause_btn"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_play_arrow_24dp"
+                                android:tint="@color/btn_icon"
+                                app:backgroundTint="@color/material_red" />
 
-                        <android.support.design.widget.FloatingActionButton
-                            android:id="@+id/down_btn"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_keyboard_arrow_down_24dp"
-                            android:tint="@color/btn_icon"
-                            app:backgroundTint="@color/material_green" />
+                            <android.support.design.widget.FloatingActionButton
+                                android:id="@+id/up_btn"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_keyboard_arrow_up_24dp"
+                                android:tint="@color/btn_icon"
+                                app:backgroundTint="@color/material_green" />
 
+                            <android.support.design.widget.FloatingActionButton
+                                android:id="@+id/down_btn"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_keyboard_arrow_down_24dp"
+                                android:tint="@color/btn_icon"
+                                app:backgroundTint="@color/material_green" />
+
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/pause_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/overlay_shade"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:visibility="invisible">
+
+                <TextView
+                    android:id="@+id/paused_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingLeft="@dimen/keyline_one"
+                    android:paddingRight="@dimen/keyline_one"
+                    android:paddingTop="8dp"
+                    android:text="@string/paused"
+                    android:textColor="@color/overlay_text"
+                    android:textSize="72dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/pause_start_over_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/keyline_one"
+                    android:gravity="center"
+                    android:paddingLeft="@dimen/keyline_two"
+                    android:paddingRight="@dimen/keyline_two"
+                    android:text="@string/start_over"
+                    android:textAllCaps="true"
+                    android:textColor="@color/overlay_btn"
+                    android:textSize="24dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/pause_continue_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/keyline_one"
+                    android:gravity="center"
+                    android:paddingLeft="@dimen/keyline_two"
+                    android:paddingRight="@dimen/keyline_two"
+                    android:text="@string/resume"
+                    android:textAllCaps="true"
+                    android:textColor="@color/overlay_btn"
+                    android:textSize="24dp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </FrameLayout>
     </LinearLayout>

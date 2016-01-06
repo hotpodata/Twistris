@@ -28,7 +28,6 @@ import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.SideBarAdapter
 import com.hotpodata.twistris.data.TwistrisGame
 import com.hotpodata.twistris.fragment.DialogGameOverFragment
-import com.hotpodata.twistris.fragment.DialogPauseFragment
 import com.hotpodata.twistris.fragment.DialogStartFragment
 import com.hotpodata.twistris.interfaces.IGameController
 import com.hotpodata.twistris.utils.BaseGameUtils
@@ -93,9 +92,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
                     }
                     unsubscribeFromTicker()
                     pause_btn.setImageResource(R.drawable.ic_play_arrow_24dp)
-
-                    var pauseFrag = DialogPauseFragment();
-                    pauseFrag.show(supportFragmentManager, FTAG_PAUSE);
+                    pause_container.visibility = View.VISIBLE
                 } else {
                     if (actionAnimator?.isPaused ?: false) {
                         actionAnimator?.resume()
@@ -103,10 +100,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
                         subscribeToTicker()
                     }
                     pause_btn.setImageResource(R.drawable.ic_pause_24dp)
-                    var pauseFrag: DialogPauseFragment? = supportFragmentManager.findFragmentByTag(FTAG_PAUSE) as DialogPauseFragment?
-                    if (pauseFrag?.isAdded ?: false) {
-                        pauseFrag?.dismiss()
-                    }
+                    pause_container.visibility = View.GONE
                 }
                 field = pause
             }
@@ -192,6 +186,13 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
         pause_btn.setOnClickListener {
             paused = !paused
         }
+        pause_start_over_btn.setOnClickListener {
+            resetGame()
+            resumeGame()
+        }
+        pause_continue_btn.setOnClickListener {
+            resumeGame()
+        }
 
         gridbinderview_horizontal.grid = game.boardHoriz
         gridbinderview_horizontal.blockDrawer = GridOfColorsBlockDrawer
@@ -256,6 +257,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
         }
 
     }
+
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (drawerToggle?.onOptionsItemSelected(item) ?: false) {
             return true
@@ -524,7 +526,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
                     animTransX.setDuration(450)
                     animTransX.addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationStart(animation: Animator?) {
-                            outer_container.addView(animView, rowPos.width().toInt(), rowPos.height().toInt())
+                            game_container.addView(animView, rowPos.width().toInt(), rowPos.height().toInt())
                         }
 
                         override fun onAnimationEnd(animation: Animator?) {
@@ -536,7 +538,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
                         }
 
                         fun done() {
-                            outer_container.removeView(animView)
+                            game_container.removeView(animView)
                         }
                     })
                     rowRemoveAnims.add(animTransX)
@@ -672,7 +674,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
         var endPos = binderView.getSubGridPosition(p, endOffsetX, endOffsetY)
 
         var binderViewRect = ScreenPositionUtils.getGlobalScreenPosition(binderView)
-        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, outer_container)
+        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, game_container)
 
         //Set up the view
         var startX = startPos.left + binderViewOuterRect.left
@@ -695,7 +697,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
         animSet.interpolator = AccelerateInterpolator()
         animSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
-                outer_container.addView(animView, startPos.width().toInt(), startPos.height().toInt())
+                game_container.addView(animView, startPos.width().toInt(), startPos.height().toInt())
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -707,7 +709,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
             }
 
             fun done() {
-                outer_container.removeView(animView)
+                game_container.removeView(animView)
             }
         })
         return animSet
