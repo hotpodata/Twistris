@@ -24,6 +24,8 @@
     <string name="start">Start</string>
     <string name="game_over">Game Over!</string>
     <string name="play_again">Play Again</string>
+    <string name="next_piece">Next\nPiece</string>
+    <string name="sign_out">Sign Out</string>
 
     <string name="twistris">Twistris</string>
     <string name="welcome_to_twistris">Welcome to Twistris!</string>

@@ -5,8 +5,13 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
+import android.support.v4.widget.DrawerLayout
+import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
@@ -20,6 +25,7 @@ import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
 import com.hotpodata.twistris.R
+import com.hotpodata.twistris.adapter.SideBarAdapter
 import com.hotpodata.twistris.data.TwistrisGame
 import com.hotpodata.twistris.fragment.DialogGameOverFragment
 import com.hotpodata.twistris.fragment.DialogPauseFragment
@@ -59,8 +65,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
     var resolvingConnectionFailure = false
     var autoStartSignInFlow = true
     var signInClicked = false;
-
-    private var _googleApiClient: GoogleApiClient? = null
+    var _googleApiClient: GoogleApiClient? = null
     val googleApiClient: GoogleApiClient
         get() {
             if (_googleApiClient == null) {
@@ -107,10 +112,36 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
             }
         }
 
+    //Drawer stuff
+    var sideBarAdapter: SideBarAdapter? = null
+    var drawerToggle: ActionBarDrawerToggle? = null
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_twistris)
+
+        //Set up the actionbar
         setSupportActionBar(toolbar);
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setShowHideAnimationEnabled(true)
+
+        //Set up the drawer
+        setUpLeftDrawer()
+        drawerToggle = object : ActionBarDrawerToggle(this, drawer_layout, R.string.drawer_open, R.string.drawer_closed) {
+            override fun onDrawerOpened(drawerView: View?) {
+                pauseGame()
+                drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            }
+
+            override fun onDrawerClosed(drawerView: View?) {
+                drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            }
+        }
+        drawer_layout.setDrawerListener(drawerToggle)
+        drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
+
 
         sign_in_button.setOnClickListener {
             Timber.d("SignIn - clicked")
@@ -204,6 +235,43 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
 
     override fun onResume() {
         super.onResume()
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle?.syncState()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        drawerToggle?.onConfigurationChanged(newConfig)
+    }
+
+    override fun onBackPressed() {
+        if (drawer_layout.isDrawerOpen(left_drawer) ?: false ) {
+            drawer_layout.closeDrawers()
+        } else {
+            super.onBackPressed()
+        }
+
+    }
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (drawerToggle?.onOptionsItemSelected(item) ?: false) {
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    fun setUpLeftDrawer() {
+        if (sideBarAdapter == null) {
+            sideBarAdapter = with(SideBarAdapter(this)) {
+                setAccentColor(android.support.v4.content.ContextCompat.getColor(this@TwistrisActivity, R.color.colorPrimary))
+                this
+            }
+            left_drawer.adapter = sideBarAdapter
+            left_drawer.layoutManager = LinearLayoutManager(this)
+        }
     }
 
     fun subscribeToTicker() {
