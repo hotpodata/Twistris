@@ -30,6 +30,7 @@ import com.hotpodata.twistris.data.TwistrisGame
 import com.hotpodata.twistris.fragment.DialogGameOverFragment
 import com.hotpodata.twistris.fragment.DialogStartFragment
 import com.hotpodata.twistris.interfaces.IGameController
+import com.hotpodata.twistris.interfaces.IGooglePlayGameServicesProvider
 import com.hotpodata.twistris.utils.BaseGameUtils
 import com.hotpodata.twistris.utils.GridOfColorsBlockDrawer
 import kotlinx.android.synthetic.main.activity_twistris.*
@@ -43,8 +44,11 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by jdrotos on 12/20/15.
  */
-class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.ConnectionCallbacks,
+class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameServicesProvider, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
+
+
+    val REQUEST_LEADERBOARD = 1
 
     val FTAG_PAUSE = "FTAG_PAUSE"
     val FTAG_START = "FTAG_START"
@@ -62,7 +66,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
     //Sign in stuff
     val RC_SIGN_IN = 9001
     var resolvingConnectionFailure = false
-    var autoStartSignInFlow = true
+    var autoStartSignInFlow = false
     var signInClicked = false;
     var _googleApiClient: GoogleApiClient? = null
     val googleApiClient: GoogleApiClient
@@ -138,22 +142,11 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
 
 
         sign_in_button.setOnClickListener {
-            Timber.d("SignIn - clicked")
-            pauseGame()
-            signInClicked = true;
-            googleApiClient.connect();
+            login()
         }
 
         sign_out_button.setOnClickListener {
-            Timber.d("SignIn - signout clicked")
-            signInClicked = false
-            autoStartSignInFlow = false
-            if (googleApiClient.isConnected()) {
-                Games.signOut(googleApiClient);
-                googleApiClient.disconnect();
-            }
-            sign_in_button.visibility = View.VISIBLE
-            sign_out_button.visibility = View.GONE
+            logout()
         }
 
         up_btn.setOnClickListener {
@@ -267,7 +260,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
 
     fun setUpLeftDrawer() {
         if (sideBarAdapter == null) {
-            sideBarAdapter = with(SideBarAdapter(this)) {
+            sideBarAdapter = with(SideBarAdapter(this, this, this)) {
                 setAccentColor(android.support.v4.content.ContextCompat.getColor(this@TwistrisActivity, R.color.colorPrimary))
                 this
             }
@@ -316,7 +309,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
         Timber.d("tick")
         if (game.gameIsOver) {
             Timber.d("tick - gameIsOver")
-            //Games.Leaderboards.submitScore(mGoogleApiClient, getString(R.string.leaderboard_alltimehighscores_id), game.currentScore);
+            if (googleApiClient.isConnected()) {
+                Games.Leaderboards.submitScore(googleApiClient, getString(R.string.leaderboard_alltimehighscores_id), game.currentScore.toLong());
+            }
             unsubscribeFromTicker()
             var frag = supportFragmentManager.findFragmentByTag(FTAG_GAME_OVER) as? DialogGameOverFragment
             if (frag == null) {
@@ -753,6 +748,41 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
     }
 
     /**
+     * IGooglePlayGameServicesProvider
+     */
+
+    override fun isLoggedIn(): Boolean {
+        return googleApiClient.isConnected
+    }
+
+    override fun login() {
+        pauseGame()
+        signInClicked = true;
+        googleApiClient.connect();
+    }
+
+    override fun logout() {
+        signInClicked = false
+        autoStartSignInFlow = false
+        if (isLoggedIn()) {
+            Games.signOut(googleApiClient);
+            googleApiClient.disconnect();
+            sideBarAdapter?.rebuildRowSet()
+        }
+        sign_in_button.visibility = View.VISIBLE
+        sign_out_button.visibility = View.GONE
+    }
+
+    override fun showLeaderBoard() {
+        if (googleApiClient.isConnected) {
+            startActivityForResult(Games.Leaderboards.getLeaderboardIntent(googleApiClient,
+                    getString(R.string.leaderboard_alltimehighscores_id)), REQUEST_LEADERBOARD);
+        } else {
+            Toast.makeText(this, R.string.you_must_be_signed_in, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
      * SIGN IN STUFF
      */
 
@@ -763,6 +793,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, GoogleApiClient.C
         if (paused) {
             resumeGame()
         }
+        sideBarAdapter?.rebuildRowSet()
     }
 
     override fun onConnectionSuspended(p0: Int) {

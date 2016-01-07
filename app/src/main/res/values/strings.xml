@@ -21,12 +21,18 @@
     <string name="paused">Game Paused</string>
     <string name="resume">Resume</string>
     <string name="restart">Restart</string>
+    <string name="reset_game">Reset Game</string>
     <string name="start_over">Start Over</string>
     <string name="start">Start</string>
     <string name="game_over">Game Over!</string>
     <string name="play_again">Play Again</string>
     <string name="next_piece">Next\nPiece</string>
+    <string name="sign_in">Sign In</string>
     <string name="sign_out">Sign Out</string>
+    <string name="sign_in_blurb">Sign in to share your high scores and view the leaderboard!</string>
+    <string name="game">Game</string>
+    <string name="high_scores">High Scores</string>
+    <string name="you_must_be_signed_in">You must be signed in to perform this action!</string>
 
     <string name="twistris">Twistris</string>
     <string name="welcome_to_twistris">Welcome to Twistris!</string>
