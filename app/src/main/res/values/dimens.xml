@@ -2,4 +2,8 @@
 <resources>
     <dimen name="keyline_one">16dp</dimen>
     <dimen name="keyline_two">72dp</dimen>
+
+    <dimen name="btn_size">56dp</dimen>
+    <dimen name="btn_container_width">72dp</dimen>
+    <dimen name="btn_container_height">216dp</dimen>
 </resources>

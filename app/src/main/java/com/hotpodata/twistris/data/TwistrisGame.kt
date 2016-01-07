@@ -11,6 +11,11 @@ import java.util.*
  */
 class TwistrisGame() {
 
+    val VERT_W = 8
+    val VERT_H = 16
+    val HORI_W = 12
+    val HORI_H = 8
+
     val MAX_LEVEL = 10
     val LEVEL_STEP = 2
 
@@ -44,8 +49,8 @@ class TwistrisGame() {
     var horizPieces = ArrayList<Pair<Grid, Pair<Int, Int>>>()
 
     init {
-        boardVert = Grid(8, 16)
-        boardHoriz = Grid(12, 8)
+        boardVert = Grid(VERT_W, VERT_H)
+        boardHoriz = Grid(HORI_W, HORI_H)
         actionNextPiece()
     }
 

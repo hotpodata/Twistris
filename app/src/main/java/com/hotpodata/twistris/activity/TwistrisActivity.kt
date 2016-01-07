@@ -33,6 +33,7 @@ import com.hotpodata.twistris.interfaces.IGameController
 import com.hotpodata.twistris.interfaces.IGooglePlayGameServicesProvider
 import com.hotpodata.twistris.utils.BaseGameUtils
 import com.hotpodata.twistris.utils.GridOfColorsBlockDrawer
+import com.hotpodata.twistris.view.SizeAwareFrameLayout
 import kotlinx.android.synthetic.main.activity_twistris.*
 import rx.Observable
 import rx.Subscription
@@ -199,6 +200,32 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
             var startFrag = DialogStartFragment()
             startFrag.show(supportFragmentManager, FTAG_START)
         }
+
+        game_container.sizeChangeListener = object : SizeAwareFrameLayout.ISizeChangeListener {
+            override fun onSizeChange(w: Int, h: Int, oldw: Int, oldh: Int) {
+                if (w > 0 && h > 0) {
+                    val vertBoardHtoWRatio = game.VERT_H / game.VERT_W.toFloat()
+                    val vertBoardWidth = w - 2 * resources.getDimensionPixelSize(R.dimen.btn_container_width)
+                    val vertBoardHeight = vertBoardHtoWRatio * vertBoardWidth
+
+                    val horizBoardWtoHRatio = game.HORI_W / game.HORI_H.toFloat()
+                    val horiBoardHeight = vertBoardWidth
+                    val horiBoardWidth = horizBoardWtoHRatio * horiBoardHeight
+
+                    gridbinderview_vertical.layoutParams?.let {
+                        it.height = vertBoardHeight.toInt()
+                        it.width = vertBoardWidth
+                        gridbinderview_vertical.layoutParams = it
+                    }
+
+                    horiz_container.layoutParams?.let {
+                        it.height = horiBoardHeight
+                        it.width = horiBoardWidth.toInt()
+                        horiz_container.layoutParams = it
+                    }
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -212,6 +239,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         super.onStop()
         googleApiClient.disconnect()
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
@@ -521,7 +549,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                     animTransX.setDuration(450)
                     animTransX.addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationStart(animation: Animator?) {
-                            game_container.addView(animView, rowPos.width().toInt(), rowPos.height().toInt())
+                            outer_container.addView(animView, rowPos.width().toInt(), rowPos.height().toInt())
                         }
 
                         override fun onAnimationEnd(animation: Animator?) {
@@ -533,7 +561,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                         }
 
                         fun done() {
-                            game_container.removeView(animView)
+                            outer_container.removeView(animView)
                         }
                     })
                     rowRemoveAnims.add(animTransX)
@@ -648,10 +676,15 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         var vertBinder = gridbinderview_vertical
         var horiBinder = horiz_container
         if (vertBinder != null && horiBinder != null) {
+            var vertGlobal = ScreenPositionUtils.getGlobalScreenPosition(vertBinder)
+            var vertLocal = ScreenPositionUtils.translateGlobalPositionToLocalPosition(vertGlobal, game_container)
+            var horiGlobal = ScreenPositionUtils.getGlobalScreenPosition(horiBinder)
+            var horiLocal = ScreenPositionUtils.translateGlobalPositionToLocalPosition(horiGlobal, game_container)
+
             var scaleRatio = vertBinder.width / horiBinder.height.toFloat()
-            var horiCenterY = horiBinder.top + horiBinder.height / 2f
+            var horiCenterY = horiLocal.top + horiLocal.height() / 2f
             var targetHorizScale = scaleRatio
-            var targetHorizYOffset = (horiBinder.width * scaleRatio) / 2f - horiCenterY
+            var targetHorizYOffset = vertLocal.top + (horiLocal.width() * scaleRatio) / 2f - horiCenterY
 
             var animScaleY = ObjectAnimator.ofFloat(horiBinder, "scaleY", 1f, 0.5f, targetHorizScale)
             var animScaleX = ObjectAnimator.ofFloat(horiBinder, "scaleX", 1f, 0.5f, targetHorizScale)
@@ -669,13 +702,18 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         var endPos = binderView.getSubGridPosition(p, endOffsetX, endOffsetY)
 
         var binderViewRect = ScreenPositionUtils.getGlobalScreenPosition(binderView)
-        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, game_container)
+        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, outer_container)
+
+        Timber.d("genPieceMoveAnim binderViewRect:" + binderViewRect)
+        Timber.d("genPieceMoveAnim binderViewOuterRect:" + binderViewOuterRect)
 
         //Set up the view
         var startX = startPos.left + binderViewOuterRect.left
         var startY = startPos.top + binderViewOuterRect.top
         var endX = endPos.left + binderViewOuterRect.left
         var endY = endPos.top + binderViewOuterRect.top
+
+        Timber.d("genPieceMoveAnim startX:" + startX + " startY:" + startY + " endX:" + endX + " endY:" + endY)
 
         //Set up the view
         var animView = GridBinderView(this)
@@ -692,7 +730,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         animSet.interpolator = AccelerateInterpolator()
         animSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
-                game_container.addView(animView, startPos.width().toInt(), startPos.height().toInt())
+                outer_container.addView(animView, startPos.width().toInt(), startPos.height().toInt())
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -704,7 +742,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
             }
 
             fun done() {
-                game_container.removeView(animView)
+                outer_container.removeView(animView)
             }
         })
         return animSet
