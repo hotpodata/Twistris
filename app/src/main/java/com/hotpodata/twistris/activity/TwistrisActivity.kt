@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -49,6 +50,8 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
 
     val REQUEST_LEADERBOARD = 1
 
+    val STORAGE_KEY_AUTO_SIGN_IN = "STORAGE_KEY_AUTO_SIGN_IN"
+
     val FTAG_PAUSE = "FTAG_PAUSE"
     val FTAG_START = "FTAG_START"
     val FTAG_GAME_OVER = "FTAG_GAME_OVER"
@@ -65,7 +68,20 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
     //Sign in stuff
     val RC_SIGN_IN = 9001
     var resolvingConnectionFailure = false
-    var autoStartSignInFlow = false
+
+    var autoStartSignInFlow: Boolean
+        set(signInOnStart: Boolean) {
+            var sharedPref = getPreferences(Context.MODE_PRIVATE);
+            with(sharedPref.edit()) {
+                putBoolean(STORAGE_KEY_AUTO_SIGN_IN, signInOnStart);
+                commit()
+            }
+        }
+        get() {
+            var sharedPref = getPreferences(Context.MODE_PRIVATE);
+            return sharedPref.getBoolean(STORAGE_KEY_AUTO_SIGN_IN, false)
+        }
+
     var signInClicked = false;
     var _googleApiClient: GoogleApiClient? = null
     val googleApiClient: GoogleApiClient
@@ -228,6 +244,13 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         super.onStart()
         if (autoStartSignInFlow) {
             googleApiClient.connect();
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!game.gameIsOver) {
+            pauseGame()
         }
     }
 
@@ -808,7 +831,8 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
 
     override fun login() {
         pauseGame()
-        signInClicked = true;
+        signInClicked = true
+        autoStartSignInFlow = true
         googleApiClient.connect();
     }
 
@@ -816,8 +840,8 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         signInClicked = false
         autoStartSignInFlow = false
         if (isLoggedIn()) {
-            Games.signOut(googleApiClient);
-            googleApiClient.disconnect();
+            Games.signOut(googleApiClient)
+            googleApiClient.disconnect()
             sideBarAdapter?.rebuildRowSet()
         }
         bindStoppedContainer()
