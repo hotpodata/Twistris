@@ -116,28 +116,32 @@ class TwistrisGame() {
         return ret
     }
 
+    fun actionRotate(left: Boolean): Boolean{
+        var rot = activePiece.rotate(left)
+        var xOff = activeXOffset
+        var yOff = activeYOffset
+        while (xOff + rot.width > boardHoriz.width) {
+            xOff--
+        }
+        while (yOff + rot.height > boardHoriz.height) {
+            yOff--
+        }
+        if (!GridHelper.gridsCollide(boardHoriz, rot, xOff, yOff)) {
+            activeXOffset = xOff
+            activeYOffset = yOff
+            activePiece = rot
+            return true
+        } else {
+            return false
+        }
+    }
+
     fun actionRotateActiveLeft(): Boolean {
-        var rot = activePiece.rotate(true)
-        while (activeYOffset + rot.height > boardHoriz.height) {
-            activeYOffset--
-        }
-        while (activeXOffset + rot.width > boardHoriz.width) {
-            activeXOffset--
-        }
-        activePiece = rot
-        return true
+        return actionRotate(true)
     }
 
     fun actionRotateActiveRight(): Boolean {
-        var rot = activePiece.rotate(false)
-        while (activeYOffset + rot.height > boardHoriz.height) {
-            activeYOffset--
-        }
-        while (activeXOffset + rot.width > boardHoriz.width) {
-            activeXOffset--
-        }
-        activePiece = rot
-        return true
+        return actionRotate(false)
     }
 
     fun actionTwistBoard() {
