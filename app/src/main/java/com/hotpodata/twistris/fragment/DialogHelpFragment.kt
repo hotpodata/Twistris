@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import com.hotpodata.twistris.R
-import kotlinx.android.synthetic.main.fragment_dialog_start.*
+import kotlinx.android.synthetic.main.fragment_dialog_help.*
 import timber.log.Timber
 
 /**
