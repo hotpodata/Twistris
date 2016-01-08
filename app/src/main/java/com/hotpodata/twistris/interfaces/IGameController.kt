@@ -9,4 +9,6 @@ interface IGameController {
     fun resumeGame()
 
     fun resetGame()
+
+    fun showHelp()
 }

@@ -33,6 +33,7 @@
     <string name="game">Game</string>
     <string name="high_scores">High Scores</string>
     <string name="you_must_be_signed_in">You must be signed in to perform this action!</string>
+    <string name="how_to_play">How To Play</string>
 
     <string name="twistris">Twistris</string>
     <string name="welcome_to_twistris">Welcome to Twistris!</string>

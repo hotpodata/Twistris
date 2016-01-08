@@ -93,11 +93,19 @@ class SideBarAdapter(ctx: Context, val gameController: IGameController, val play
             Timber.e(e, "Version fail")
         }
         sideBarRows.add(SideBarAdapter.SideBarHeading(mContext.resources.getString(R.string.app_label), version))
+
+
+        var helpRow = SideBarAdapter.SettingsRow(mContext.resources.getString(R.string.how_to_play), "", View.OnClickListener {
+            gameController.showHelp()
+        }, R.drawable.ic_info_outline_24dp)
+
         sideBarRows.add(mContext.resources.getString(R.string.game))
         if (playGameServicesProvider.isLoggedIn()) {
             sideBarRows.add(SideBarAdapter.SettingsRow(mContext.resources.getString(R.string.high_scores), "", View.OnClickListener {
                 playGameServicesProvider.showLeaderBoard()
             }, R.drawable.ic_trophy_black_48dp))
+            sideBarRows.add(SideBarAdapter.Div(true))
+            sideBarRows.add(helpRow)
             sideBarRows.add(SideBarAdapter.Div(true))
             sideBarRows.add(SideBarAdapter.SettingsRow(mContext.resources.getString(R.string.sign_out), "", View.OnClickListener {
                 playGameServicesProvider.logout()
@@ -106,6 +114,8 @@ class SideBarAdapter(ctx: Context, val gameController: IGameController, val play
             sideBarRows.add(RowSignIn(View.OnClickListener {
                 playGameServicesProvider.login()
             }))
+            sideBarRows.add(SideBarAdapter.Div(false))
+            sideBarRows.add(helpRow)
         }
 
         sideBarRows.add(SideBarAdapter.Div(false))

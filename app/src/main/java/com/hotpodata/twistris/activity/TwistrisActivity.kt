@@ -29,7 +29,7 @@ import com.hotpodata.blocklib.view.GridBinderView
 import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.SideBarAdapter
 import com.hotpodata.twistris.data.TwistrisGame
-import com.hotpodata.twistris.fragment.DialogStartFragment
+import com.hotpodata.twistris.fragment.DialogHelpFragment
 import com.hotpodata.twistris.interfaces.IGameController
 import com.hotpodata.twistris.interfaces.IGooglePlayGameServicesProvider
 import com.hotpodata.twistris.utils.BaseGameUtils
@@ -46,16 +46,15 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by jdrotos on 12/20/15.
  */
-class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameServicesProvider, GoogleApiClient.ConnectionCallbacks,
+class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragment.IHelpDialogListener, IGooglePlayGameServicesProvider, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
+
 
     val REQUEST_LEADERBOARD = 1
 
     val STORAGE_KEY_AUTO_SIGN_IN = "STORAGE_KEY_AUTO_SIGN_IN"
 
-    val FTAG_PAUSE = "FTAG_PAUSE"
-    val FTAG_START = "FTAG_START"
-    val FTAG_GAME_OVER = "FTAG_GAME_OVER"
+    val FTAG_HELP = "FTAG_HELP"
 
     val MAX_TICK_LENGTH_MS = 3000
     val MIN_TICK_LENGTH_MS = 300
@@ -244,8 +243,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         }
 
         if (savedInstanceState == null) {
-            var startFrag = DialogStartFragment()
-            startFrag.show(supportFragmentManager, FTAG_START)
+            showHelp()
         }
 
         game_container.sizeChangeListener = object : SizeAwareFrameLayout.ISizeChangeListener {
@@ -274,6 +272,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
             }
         }
     }
+
 
     override fun onStart() {
         super.onStart()
@@ -856,6 +855,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         Toast.makeText(this, "Showing ad!", Toast.LENGTH_SHORT).show()
     }
 
+    override fun showHelp() {
+        var startFrag = supportFragmentManager.findFragmentByTag(FTAG_HELP) as DialogHelpFragment?
+        if (startFrag == null) {
+            startFrag = DialogHelpFragment()
+        }
+        if (!startFrag.isAdded) {
+            startFrag.show(supportFragmentManager, FTAG_HELP)
+        }
+    }
+
     /**
      * IGooglePlayGameServicesProvider
      */
@@ -929,6 +938,17 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                     RC_SIGN_IN, getString(R.string.sign_in_failed))) {
                 resolvingConnectionFailure = false
             }
+        }
+    }
+
+    /**
+     * IHelpDialogListener
+     */
+    override fun onHelpDialogDismissed() {
+        Timber.d("onHelpDialogDismissed")
+        if (!drawer_layout.isDrawerOpen(left_drawer)) {
+            Timber.d("onHelpDialogDismissed drawer wasnt open... so we should resume..")
+            resumeGame()
         }
     }
 }
