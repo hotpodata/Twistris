@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
@@ -128,6 +129,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
     var sideBarAdapter: SideBarAdapter? = null
     var drawerToggle: ActionBarDrawerToggle? = null
 
+    var touchStartY = 0f
+    var blockHeight = 1f
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_twistris)
@@ -153,8 +157,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         drawer_layout.setDrawerListener(drawerToggle)
         drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
-
-
         stopped_sign_in_button.setOnClickListener {
             login()
         }
@@ -166,7 +168,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         down_btn.setOnClickListener {
             if (allowGameActions() && game.actionMoveActiveDown()) {
                 bindHorizGridView()
-
             }
         }
         rotate_left_btn.setOnClickListener {
@@ -207,6 +208,40 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
 
         bindHorizGridView()
         bindVertGridView()
+
+        //Set up the touch listener for the top grid
+        gridbinderview_horizontal.setOnTouchListener {
+            view, motionEvent ->
+            if (allowGameActions()) {
+                var gridView = view as GridBinderView
+                var motionEventConsumed = motionEvent.actionMasked != MotionEvent.ACTION_DOWN
+                when (motionEvent.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        touchStartY = motionEvent.y
+                        blockHeight = gridView.getSubGridPosition(Grid(1, 1), 0, 0).height()
+                        motionEventConsumed = gridView.getSubGridPosition(game.activePiece, game.activeXOffset, game.activeYOffset).contains(motionEvent.x, motionEvent.y)
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        var dif = touchStartY - motionEvent.y
+                        var blocks = Math.abs(dif.toInt() / blockHeight.toInt())
+                        if (Math.abs(dif) > blockHeight) {
+                            for (i in 0..blocks - 1) {
+                                if (dif > 0) {
+                                    game.actionMoveActiveUp()
+                                } else {
+                                    game.actionMoveActiveDown()
+                                }
+                            }
+                            bindHorizGridView()
+                            touchStartY = motionEvent.y + (dif % blockHeight)
+                        }
+                    }
+                }
+                motionEventConsumed
+            } else {
+                false
+            }
+        }
 
         if (savedInstanceState == null) {
             var startFrag = DialogStartFragment()
@@ -895,7 +930,5 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                 resolvingConnectionFailure = false
             }
         }
-
-
     }
 }
