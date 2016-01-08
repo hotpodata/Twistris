@@ -72,7 +72,7 @@ class TwistrisGame() {
 
 
     fun peekMoveActiveUp(): Boolean {
-        return GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset, activeYOffset - 1)
+        return GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset, activeYOffset - 1) && !GridHelper.gridsCollide(boardHoriz, activePiece, activeXOffset, activeYOffset - 1)
     }
 
     fun actionMoveActiveUp(): Boolean {
@@ -84,7 +84,7 @@ class TwistrisGame() {
     }
 
     fun peekMoveActiveDown(): Boolean {
-        return GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset, activeYOffset + 1);
+        return GridHelper.gridInBounds(boardHoriz, activePiece, activeXOffset, activeYOffset + 1) && !GridHelper.gridsCollide(boardHoriz, activePiece, activeXOffset, activeYOffset + 1)
     }
 
     fun actionMoveActiveDown(): Boolean {
@@ -116,16 +116,20 @@ class TwistrisGame() {
         return ret
     }
 
-    fun actionRotate(left: Boolean): Boolean{
+    fun actionRotate(left: Boolean): Boolean {
         var rot = activePiece.rotate(left)
         var xOff = activeXOffset
         var yOff = activeYOffset
+
+        //Now we make sure the coordinates are ok with the board (since rotations next to the edge are ok)
         while (xOff + rot.width > boardHoriz.width) {
             xOff--
         }
         while (yOff + rot.height > boardHoriz.height) {
             yOff--
         }
+
+        //If we've got no collisions we're in great shape
         if (!GridHelper.gridsCollide(boardHoriz, rot, xOff, yOff)) {
             activeXOffset = xOff
             activeYOffset = yOff
