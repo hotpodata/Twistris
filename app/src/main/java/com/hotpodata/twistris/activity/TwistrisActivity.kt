@@ -27,7 +27,6 @@ import com.hotpodata.blocklib.view.GridBinderView
 import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.SideBarAdapter
 import com.hotpodata.twistris.data.TwistrisGame
-import com.hotpodata.twistris.fragment.DialogGameOverFragment
 import com.hotpodata.twistris.fragment.DialogStartFragment
 import com.hotpodata.twistris.interfaces.IGameController
 import com.hotpodata.twistris.interfaces.IGooglePlayGameServicesProvider
@@ -47,7 +46,6 @@ import java.util.concurrent.TimeUnit
  */
 class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameServicesProvider, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
-
 
     val REQUEST_LEADERBOARD = 1
 
@@ -97,7 +95,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                     }
                     unsubscribeFromTicker()
                     pause_btn.setImageResource(R.drawable.ic_play_arrow_24dp)
-                    pause_container.visibility = View.VISIBLE
                 } else {
                     if (actionAnimator?.isPaused ?: false) {
                         actionAnimator?.resume()
@@ -105,9 +102,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                         subscribeToTicker()
                     }
                     pause_btn.setImageResource(R.drawable.ic_pause_24dp)
-                    pause_container.visibility = View.GONE
                 }
                 field = pause
+                bindStoppedContainer()
             }
         }
 
@@ -142,14 +139,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
 
 
 
-        sign_in_button.setOnClickListener {
+        stopped_sign_in_button.setOnClickListener {
             login()
         }
-
-        sign_out_button.setOnClickListener {
-            logout()
-        }
-
         up_btn.setOnClickListener {
             if (allowGameActions() && game.actionMoveActiveUp()) {
                 bindHorizGridView()
@@ -180,13 +172,17 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         pause_btn.setOnClickListener {
             paused = !paused
         }
-        pause_start_over_btn.setOnClickListener {
+        stopped_start_over_btn.setOnClickListener {
             resetGame()
             resumeGame()
         }
-        pause_continue_btn.setOnClickListener {
+        stopped_continue_btn.setOnClickListener {
             resumeGame()
         }
+        stopped_leader_board_btn.setOnClickListener {
+            showLeaderBoard()
+        }
+
 
         gridbinderview_horizontal.grid = game.boardHoriz
         gridbinderview_horizontal.blockDrawer = GridOfColorsBlockDrawer
@@ -321,6 +317,28 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         gridbinderview_upcomingpiece.grid = boardUpcoming
     }
 
+    fun bindStoppedContainer() {
+        if (game.gameIsOver || paused) {
+            if (game.gameIsOver) {
+                stopped_msg_tv.text = getString(R.string.game_over)
+                stopped_continue_btn.visibility = View.GONE
+            } else if (paused) {
+                stopped_msg_tv.text = getString(R.string.paused)
+                stopped_continue_btn.visibility = View.VISIBLE
+            }
+            if (googleApiClient.isConnected) {
+                stopped_signed_in_container.visibility = View.VISIBLE
+                stopped_sign_in_container.visibility = View.GONE
+            } else {
+                stopped_signed_in_container.visibility = View.GONE
+                stopped_sign_in_container.visibility = View.VISIBLE
+            }
+            stopped_container.visibility = View.VISIBLE
+        } else {
+            stopped_container.visibility = View.INVISIBLE
+        }
+    }
+
     fun bindHorizGridView() {
         var grid = GridHelper.copyGrid(game.boardHoriz)
         GridHelper.addGrid(grid, game.activePiece, game.activeXOffset, game.activeYOffset)
@@ -341,13 +359,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
                 Games.Leaderboards.submitScore(googleApiClient, getString(R.string.leaderboard_alltimehighscores_id), game.currentScore.toLong());
             }
             unsubscribeFromTicker()
-            var frag = supportFragmentManager.findFragmentByTag(FTAG_GAME_OVER) as? DialogGameOverFragment
-            if (frag == null) {
-                frag = DialogGameOverFragment()
-            }
-            if (!frag.isAdded) {
-                frag.show(supportFragmentManager, FTAG_GAME_OVER)
-            }
+            bindStoppedContainer()
         } else if (game.gameNeedsTwist()) {
             Timber.d("tick - gameNeedsTwist")
             var animGame = TwistrisGame(game)
@@ -778,6 +790,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
         actionAnimator?.cancel()
         actionAnimator = null
         boardUpcoming = Grid(4, 2)
+        bindStoppedContainer()
         bindHorizGridView()
         bindVertGridView()
 
@@ -807,8 +820,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
             googleApiClient.disconnect();
             sideBarAdapter?.rebuildRowSet()
         }
-        sign_in_button.visibility = View.VISIBLE
-        sign_out_button.visibility = View.GONE
+        bindStoppedContainer()
     }
 
     override fun showLeaderBoard() {
@@ -826,11 +838,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, IGooglePlayGameSe
 
     override fun onConnected(connectionHint: Bundle?) {
         Timber.d("SignIn - onConnected")
-        sign_in_button.visibility = View.GONE
-        sign_out_button.visibility = View.VISIBLE
-        if (paused) {
-            resumeGame()
-        }
+        bindStoppedContainer()
         sideBarAdapter?.rebuildRowSet()
     }
 

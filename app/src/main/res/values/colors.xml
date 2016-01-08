@@ -16,7 +16,8 @@
     <color name="settings_row_title_color">#0F0F0F</color>
     <color name="settings_row_subtitle_color">#5F5F5F</color>
 
-    <color name="overlay_shade">#DDFFFFFF</color>
+    <color name="overlay_shade">#F3FFFFFF</color>
     <color name="overlay_text">@color/settings_row_subtitle_color</color>
-    <color name="overlay_btn">@color/colorAccent</color>
+    <color name="overlay_btn_text">@color/white</color>
+    <color name="overlay_btn_bg">@color/colorPrimary</color>
 </resources>
