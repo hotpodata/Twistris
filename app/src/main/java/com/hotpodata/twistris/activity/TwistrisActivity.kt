@@ -857,6 +857,10 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
     }
 
     override fun resetGame() {
+        if (isLoggedIn() && !game.gameIsOver && game.currentScore > 0) {
+            Games.Leaderboards.submitScore(googleApiClient, getString(R.string.leaderboard_alltimehighscores_id), game.currentScore.toLong())
+        }
+
         game = TwistrisGame()
         actionAnimator?.cancel()
         actionAnimator = null
@@ -864,6 +868,8 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         bindStoppedContainer()
         bindHorizGridView()
         bindVertGridView()
+
+
     }
 
     override fun showHelp() {
@@ -917,6 +923,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
     override fun onConnected(connectionHint: Bundle?) {
         Timber.d("SignIn - onConnected")
+        if (game.gameIsOver) {
+            Games.Leaderboards.submitScore(googleApiClient, getString(R.string.leaderboard_alltimehighscores_id), game.currentScore.toLong())
+        }
         bindStoppedContainer()
         sideBarAdapter?.rebuildRowSet()
     }
