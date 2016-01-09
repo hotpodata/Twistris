@@ -632,7 +632,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     animTransX.setDuration(450)
                     animTransX.addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationStart(animation: Animator?) {
-                            outer_container.addView(animView, rowPos.width().toInt(), rowPos.height().toInt())
+                            game_container.addView(animView, rowPos.width().toInt(), rowPos.height().toInt())
                         }
 
                         override fun onAnimationEnd(animation: Animator?) {
@@ -644,7 +644,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                         }
 
                         fun done() {
-                            outer_container.removeView(animView)
+                            game_container.removeView(animView)
                         }
                     })
                     rowRemoveAnims.add(animTransX)
