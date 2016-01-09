@@ -23,13 +23,13 @@ object TetrisFactory {
     var allPieces: Array<Grid> = arrayOf(box(), bar(), j(), l(), z(), s(), t())
 
     fun setupResColors(ctx: Context){
-        boxColor = ctx.getColor(R.color.material_amber)
-        jColor = ctx.getColor(R.color.material_green)
-        lColor = ctx.getColor(R.color.material_deep_orange)
-        barColor = ctx.getColor(R.color.material_deep_purple)
-        sColor = ctx.getColor(R.color.material_blue_grey)
-        zColor = ctx.getColor(R.color.material_red)
-        tColor = ctx.getColor(R.color.material_purple)
+        boxColor = ctx.resources.getColor(R.color.material_amber)
+        jColor = ctx.resources.getColor(R.color.material_green)
+        lColor = ctx.resources.getColor(R.color.material_deep_orange)
+        barColor = ctx.resources.getColor(R.color.material_deep_purple)
+        sColor = ctx.resources.getColor(R.color.material_blue_grey)
+        zColor = ctx.resources.getColor(R.color.material_red)
+        tColor = ctx.resources.getColor(R.color.material_purple)
 
         allPieces = arrayOf(box(), bar(), j(), l(), z(), s(), t())
     }
