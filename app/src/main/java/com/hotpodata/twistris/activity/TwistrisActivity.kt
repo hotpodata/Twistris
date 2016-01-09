@@ -785,7 +785,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         var endPos = binderView.getSubGridPosition(p, endOffsetX, endOffsetY)
 
         var binderViewRect = ScreenPositionUtils.getGlobalScreenPosition(binderView)
-        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, outer_container)
+        var binderViewOuterRect = ScreenPositionUtils.translateGlobalPositionToLocalPosition(binderViewRect, game_container)
 
         Timber.d("genPieceMoveAnim binderViewRect:" + binderViewRect)
         Timber.d("genPieceMoveAnim binderViewOuterRect:" + binderViewOuterRect)
@@ -813,7 +813,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         animSet.interpolator = AccelerateInterpolator()
         animSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
-                outer_container.addView(animView, startPos.width().toInt(), startPos.height().toInt())
+                game_container.addView(animView, startPos.width().toInt(), startPos.height().toInt())
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -825,7 +825,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             }
 
             fun done() {
-                outer_container.removeView(animView)
+                game_container.removeView(animView)
             }
         })
         return animSet
