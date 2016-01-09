@@ -1,4 +1,4 @@
-package com.expedia.bookings.utils
+package com.hotpodata.blockelganger.utils
 
 import android.annotation.TargetApi
 import android.graphics.Rect

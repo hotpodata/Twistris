@@ -19,12 +19,12 @@ android {
     signingConfigs {
         def provDir = System.getenv("TWISTRIS_KEYSTORE_DIRECTORY") ?: ""
         def twistrisKeystorePass = System.getenv("TWISTRIS_KEYSTORE_PASS") ?: ""
-        def twistrisProPass = System.getenv("TWISTRIS_PASS") ?: ""
+        def twistrisPass = System.getenv("TWISTRIS_PASS") ?: ""
         twistrisRelease {
             storeFile file("${provDir}/twistris.keystore")
             storePassword twistrisKeystorePass
             keyAlias "twistris-release"
-            keyPassword twistrisProPass
+            keyPassword twistrisPass
         }
     }
 

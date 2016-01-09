@@ -20,11 +20,11 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
-import com.expedia.bookings.utils.ScreenPositionUtils
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.games.Games
+import com.hotpodata.blockelganger.utils.ScreenPositionUtils
 import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
@@ -72,7 +72,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
     //Sign in stuff
     val RC_SIGN_IN = 9001
     var resolvingConnectionFailure = false
-
     var autoStartSignInFlow: Boolean
         set(signInOnStart: Boolean) {
             var sharedPref = getPreferences(Context.MODE_PRIVATE);
@@ -85,7 +84,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             var sharedPref = getPreferences(Context.MODE_PRIVATE);
             return sharedPref.getBoolean(STORAGE_KEY_AUTO_SIGN_IN, false)
         }
-
     var signInClicked = false;
     var _googleApiClient: GoogleApiClient? = null
     val googleApiClient: GoogleApiClient
@@ -160,9 +158,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         drawer_layout.setDrawerListener(drawerToggle)
         drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
-        stopped_sign_in_button.setOnClickListener {
-            login()
-        }
+
         up_btn.setOnClickListener {
             if (allowGameActions() && game.actionMoveActiveUp()) {
                 bindHorizGridView()
@@ -201,6 +197,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         }
         stopped_leader_board_btn.setOnClickListener {
             showLeaderBoard()
+        }
+        stopped_sign_in_button.setOnClickListener {
+            login()
         }
 
 
