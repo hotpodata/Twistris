@@ -6,4 +6,5 @@
     <dimen name="btn_size">56dp</dimen>
     <dimen name="btn_container_width">72dp</dimen>
     <dimen name="btn_container_height">216dp</dimen>
+    <dimen name="ad_view_height">50dp</dimen>
 </resources>

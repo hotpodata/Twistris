@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.provider.Settings
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
@@ -20,12 +21,14 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import com.expedia.bookings.utils.ScreenPositionUtils
+import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.games.Games
 import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
+import com.hotpodata.twistris.BuildConfig
 import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.SideBarAdapter
 import com.hotpodata.twistris.data.TwistrisGame
@@ -40,6 +43,7 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -249,9 +253,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         game_container.sizeChangeListener = object : SizeAwareFrameLayout.ISizeChangeListener {
             override fun onSizeChange(w: Int, h: Int, oldw: Int, oldh: Int) {
                 if (w > 0 && h > 0) {
+                    //how much height we have above the button bar for our horizontal board
+                    val availableHoriBoardHeight = h - btn_outer_container.height
+
                     val vertBoardHtoWRatio = game.VERT_H / game.VERT_W.toFloat()
-                    val vertBoardWidth = w - 2 * resources.getDimensionPixelSize(R.dimen.btn_container_width)
-                    val vertBoardHeight = vertBoardHtoWRatio * vertBoardWidth
+                    var vertBoardWidth = w - 2 * resources.getDimensionPixelSize(R.dimen.btn_container_width)
+                    var vertBoardHeight = vertBoardHtoWRatio * vertBoardWidth
+                    if (vertBoardWidth > availableHoriBoardHeight) {
+                        vertBoardWidth = availableHoriBoardHeight
+                        vertBoardHeight = vertBoardHtoWRatio * vertBoardWidth
+                    }
 
                     val horizBoardWtoHRatio = game.HORI_W / game.HORI_H.toFloat()
                     val horiBoardHeight = vertBoardWidth
@@ -271,6 +282,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                 }
             }
         }
+
+        //Load ads
+        bindAdView()
     }
 
 
@@ -850,9 +864,6 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         bindStoppedContainer()
         bindHorizGridView()
         bindVertGridView()
-
-        //TODO: Show real ad
-        Toast.makeText(this, "Showing ad!", Toast.LENGTH_SHORT).show()
     }
 
     override fun showHelp() {
@@ -950,5 +961,45 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             Timber.d("onHelpDialogDismissed drawer wasnt open... so we should resume..")
             resumeGame()
         }
+    }
+
+
+    /*
+    AD STUFF
+     */
+
+    private fun bindAdView() {
+        var adRequest = with(AdRequest.Builder()) {
+            if (BuildConfig.IS_DEBUG_BUILD) {
+                addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                var andId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+                var hash = md5(andId).toUpperCase()
+                Timber.d("Adding test device. hash:" + hash)
+                addTestDevice(hash)
+            }
+            build()
+        }
+        ad_view.loadAd(adRequest)
+    }
+
+
+    private fun md5(s: String): String {
+        try {
+            var digest = MessageDigest.getInstance("MD5")
+            digest.update(s.toByteArray())
+            var messageDigest = digest.digest()
+
+            var hexString = StringBuffer()
+            for (i in messageDigest.indices) {
+                var h = Integer.toHexString(0xFF and messageDigest[i].toInt())
+                while (h.length < 2)
+                    h = "0" + h
+                hexString.append(h)
+            }
+            return hexString.toString()
+        } catch(ex: Exception) {
+            Timber.e(ex, "Fail in md5");
+        }
+        return ""
     }
 }

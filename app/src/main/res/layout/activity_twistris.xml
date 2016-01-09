@@ -6,7 +6,6 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context=".activity.GameActivity">
 
     <LinearLayout
@@ -112,13 +111,23 @@
         <FrameLayout
             android:id="@+id/outer_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="#546E7A">
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/ad_view"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/ad_view_height"
+                android:layout_gravity="center_horizontal|top"
+                android:layout_marginTop="8dp"
+                app:adSize="BANNER"
+                app:adUnitId="@string/banner_ad_unit_id" />
 
             <com.hotpodata.twistris.view.SizeAwareFrameLayout
                 android:id="@+id/game_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#546E7A">
+                android:layout_marginTop="66dp">
 
                 <com.hotpodata.blocklib.view.GridBinderView
                     android:id="@+id/gridbinderview_vertical"
@@ -133,7 +142,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="32dp"
                     android:background="#DDE3F2FD"
                     android:elevation="16dp">
 
