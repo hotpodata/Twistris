@@ -278,6 +278,8 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                         it.width = horiBoardWidth.toInt()
                         horiz_container.layoutParams = it
                     }
+
+                    arrow.translationY = (horiBoardHeight - resources.getDimensionPixelSize(R.dimen.arrow_size)) / 2f
                 }
             }
         }
@@ -477,6 +479,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
     fun performActionTwist(animGame: TwistrisGame) {
         val animatorSet = AnimatorSet()
         animatorSet.playSequentially(genTwistAnimation(), genHorizDropAnimation(animGame), genHorizFlyInFromRightAnimation(animGame, animGame.currentLevel != game.currentLevel))
+        if (game.twistCount <= 1) {
+            animatorSet.setDuration(3000)
+        }
         animatorSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 done()
@@ -670,10 +675,46 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         }
 
 
-        Timber.d("3 workingBoard:" + workingBoard.getPrintString(" - ", " * "))
+        //The arrow animates in and out based on the height of pieces in the vertical board
+        var arrowAlphaOut: ObjectAnimator? = null
+        var emptyRows = 0
+        for (i in animGame.boardVert.height..workingBoard.height - 1) {
+            if (workingBoard.rowEmpty(i)) {
+                emptyRows++
+            } else {
+                break;
+            }
+        }
+        Timber.d("emptyRows:" + emptyRows + " horizHeight:" + game.HORI_H)
+        if (emptyRows <= game.HORI_H && arrow.visibility == View.VISIBLE) {
+            Timber.d("emptyRows:" + emptyRows + " HIDING ARROW!")
+            arrowAlphaOut = ObjectAnimator.ofFloat(arrow, "alpha", 1f, 0f)
+            arrowAlphaOut.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    arrow.visibility = View.INVISIBLE
+                }
+            })
+        } else if (emptyRows > game.HORI_H && arrow.visibility != View.VISIBLE) {
+            Timber.d("emptyRows:" + emptyRows + " SHOWING ARROW!")
+            arrowAlphaOut = ObjectAnimator.ofFloat(arrow, "alpha", 0f, 1f)
+            arrowAlphaOut.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    arrow.alpha = 0f
+                    arrow.visibility = View.VISIBLE
+                }
+            })
+        }
 
+
+        Timber.d("3 workingBoard:" + workingBoard.getPrintString(" - ", " * "))
         var animatorSet = AnimatorSet()
-        animatorSet.playSequentially(dropAnimators, rowRemovalAnimators)
+        if (arrowAlphaOut == null) {
+            animatorSet.playSequentially(dropAnimators, rowRemovalAnimators)
+        } else {
+            var dropAndArrowAlpha = AnimatorSet()
+            dropAndArrowAlpha.playTogether(arrowAlphaOut, dropAnimators)
+            animatorSet.playSequentially(dropAndArrowAlpha, rowRemovalAnimators)
+        }
         animatorSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
                 horiz_container.alpha = 0f//Maybe we could find a better place for this?
@@ -689,6 +730,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
             fun done() {
                 bindVertGridView()
+                if (game.gameIsOver) {
+                    gameTick()
+                }
             }
         })
         return animatorSet
@@ -711,6 +755,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             }
         })
         animTransX.interpolator = DecelerateInterpolator()
+        var arrowRotation = ObjectAnimator.ofFloat(arrow, "rotation", 270f, 0f)
 
         Timber.d("LevelMessage animGame.currentLevel:" + animGame.currentLevel + " game.currentLevel:" + game.currentLevel)
         if (includeLevelBlurb) {
@@ -745,9 +790,10 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     level_up_container.scaleY = 1f
                 }
             })
-            animSet.playSequentially(animTransX, lvlTxtAnim)
+
+            animSet.playSequentially(arrowRotation, animTransX, lvlTxtAnim)
         } else {
-            animSet.play(animTransX)
+            animSet.playTogether(arrowRotation, animTransX)
         }
 
         return animSet
@@ -773,7 +819,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             var animTransY = ObjectAnimator.ofFloat(horiBinder, "translationY", 0f, targetHorizYOffset)
             var animRotation = ObjectAnimator.ofFloat(horiBinder, "rotation", 0f, 90f)
 
-            animSet.playTogether(animScaleY, animScaleX, animTransY, animRotation)
+            var arrowRotation = ObjectAnimator.ofFloat(arrow, "rotation", 0f, 270f)
+
+            animSet.playTogether(animScaleY, animScaleX, animTransY, animRotation, arrowRotation)
             animSet.interpolator = AccelerateDecelerateInterpolator()
         }
         return animSet
@@ -867,8 +915,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         bindStoppedContainer()
         bindHorizGridView()
         bindVertGridView()
-
-
+        arrow.rotation = 0f
+        arrow.alpha = 1f
+        arrow.visibility = View.VISIBLE
     }
 
     override fun showHelp() {

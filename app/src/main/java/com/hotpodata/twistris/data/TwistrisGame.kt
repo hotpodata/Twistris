@@ -22,6 +22,7 @@ class TwistrisGame() {
     var currentRowsDestroyed = 0
     var currentScore = 0
     var currentLevel = 1
+    var twistCount = 0
     var gameIsOver = false
 
     var boardVert: Grid
@@ -198,6 +199,7 @@ class TwistrisGame() {
         currentRowsDestroyed += shiftVal
         currentLevel = currentRowsDestroyed / LEVEL_STEP + 1
         gameIsOver = !workingBoard.rowEmpty(boardVert.height - 1)
+        twistCount++
 
         boardVert = GridHelper.copyGridPortion(workingBoard, 0, boardVert.height, boardVert.width, workingBoard.height)
     }

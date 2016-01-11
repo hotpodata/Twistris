@@ -136,6 +136,14 @@
                     android:layout_gravity="center"
                     android:background="#E3F2FD" />
 
+                <ImageView
+                    android:id="@+id/arrow"
+                    android:layout_width="@dimen/arrow_size"
+                    android:layout_height="@dimen/arrow_size"
+                    android:layout_gravity="top|center_horizontal"
+                    android:src="@drawable/ic_keyboard_backspace_128dp"
+                    android:tint="@color/material_blue_grey" />
+
                 <FrameLayout
                     android:id="@+id/horiz_container"
                     android:layout_width="wrap_content"
@@ -143,10 +151,17 @@
                     android:layout_gravity="center_horizontal"
                     android:background="#DDE3F2FD">
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_gravity="bottom"
+                        android:background="@color/material_blue_grey" />
+
                     <com.hotpodata.blocklib.view.GridBinderView
                         android:id="@+id/gridbinderview_horizontal"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="match_parent"
+                        android:layout_gravity="top" />
 
                     <LinearLayout
                         android:id="@+id/level_up_container"
@@ -272,7 +287,7 @@
                 android:background="@color/overlay_shade"
                 android:gravity="center_vertical"
                 android:orientation="vertical"
-                android:visibility="visible">
+                android:visibility="invisible">
 
                 <TextView
                     android:id="@+id/stopped_msg_tv"
