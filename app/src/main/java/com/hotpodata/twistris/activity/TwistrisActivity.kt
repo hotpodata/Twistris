@@ -28,6 +28,7 @@ import com.hotpodata.blockelganger.utils.ScreenPositionUtils
 import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
+import com.hotpodata.common.utils.HashUtils
 import com.hotpodata.twistris.BuildConfig
 import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.TwistrisSideBarAdapter
@@ -43,7 +44,6 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
-import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -1028,7 +1028,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             if (BuildConfig.IS_DEBUG_BUILD) {
                 addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                 var andId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-                var hash = md5(andId).toUpperCase()
+                var hash = HashUtils.md5(andId).toUpperCase()
                 Timber.d("Adding test device. hash:" + hash)
                 addTestDevice(hash)
             }
@@ -1037,24 +1037,4 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         ad_view.loadAd(adRequest)
     }
 
-
-    private fun md5(s: String): String {
-        try {
-            var digest = MessageDigest.getInstance("MD5")
-            digest.update(s.toByteArray())
-            var messageDigest = digest.digest()
-
-            var hexString = StringBuffer()
-            for (i in messageDigest.indices) {
-                var h = Integer.toHexString(0xFF and messageDigest[i].toInt())
-                while (h.length < 2)
-                    h = "0" + h
-                hexString.append(h)
-            }
-            return hexString.toString()
-        } catch(ex: Exception) {
-            Timber.e(ex, "Fail in md5");
-        }
-        return ""
-    }
 }
