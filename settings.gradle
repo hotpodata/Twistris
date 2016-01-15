@@ -1,1 +1,1 @@
-include ':app', ':blocklib'
+include ':app', ':blocklib', ':common'
