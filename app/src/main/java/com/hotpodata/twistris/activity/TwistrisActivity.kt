@@ -493,6 +493,25 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                 bindHorizGridView()
                 bindVertGridView()
                 actionAnimator = null
+
+                //We show our achievements after things are back to normal
+                if (game.currentLevel == 2 && animGame.currentLevel < 2) {
+                    achieve(R.string.achievement_plot_twist);
+                }
+                if (game.currentLevel >= 3 && animGame.currentLevel < 3) {
+                    achieve(R.string.achievement_twisted_like_fishing_line);
+                }
+                if (game.currentLevel >= 5 && animGame.currentLevel < 5) {
+                    achieve(R.string.achievement_twisted_not_stirred);
+                }
+                if (game.currentLevel >= 7 && animGame.currentLevel < 7) {
+                    achieve(R.string.achievement_double_helix);
+                }
+                if (animGame.currentRowsDestroyed == animGame.currentRowsDestroyed + 4) {
+                    achieve(R.string.achievement_four_line_so_devine);
+                } else if (animGame.currentRowsDestroyed >= animGame.currentRowsDestroyed + 3) {
+                    achieve(R.string.achievement_three_line_ninja_time);
+                }
             }
         })
         actionAnimator = animatorSet
@@ -1037,4 +1056,20 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         ad_view.loadAd(adRequest)
     }
 
+    /**
+     * Achievement stuff
+     */
+
+    private fun achieve(resId: Int) {
+        achieve(getString(resId))
+    }
+
+    private fun achieve(id: String) {
+        Timber.d("ACHIEVEMENT:" + id)
+        if (isLoggedIn()) {
+            Games.Achievements.unlock(googleApiClient, id);
+        } else if (BuildConfig.IS_DEBUG_BUILD) {
+            Toast.makeText(this, R.string.achievements_logged_out_message, Toast.LENGTH_SHORT).show()
+        }
+    }
 }

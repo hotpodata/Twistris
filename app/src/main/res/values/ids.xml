@@ -2,4 +2,12 @@
 <resources>
     <string name="app_id">573770405666</string>
     <string name="leaderboard_alltimehighscores_id">CgkIoq6Gu9kQEAIQAg</string>
+
+    <!--TODO: USE VALID IDS HERE -->
+    <string name="achievement_twisted_like_fishing_line">A</string>
+    <string name="achievement_double_helix">A</string>
+    <string name="achievement_four_line_so_devine">A</string>
+    <string name="achievement_three_line_ninja_time">A</string>
+    <string name="achievement_twisted_not_stirred">A</string>
+    <string name="achievement_plot_twist">A</string>
 </resources>

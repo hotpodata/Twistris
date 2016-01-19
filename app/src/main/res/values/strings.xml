@@ -43,4 +43,6 @@
     <string name="when_the_number_stuck">When the number of pieces stuck to the left equals the level number, the horizontal board twists clockwise.</string>
     <string name="pieces_fall">After rotation, pieces that were stuck to the left of the horizontal board, now fall onto the vertical board in reverse order.</string>
     <string name="lines_are_cleared">Lines are cleared, points are gained, repeat!</string>
+
+    <string name="achievements_logged_out_message">Log in to track your achievements!</string>
 </resources>
