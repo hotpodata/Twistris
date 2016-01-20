@@ -36,6 +36,10 @@ class TwistrisSideBarAdapter(ctx: Context, val gameController: IGameController, 
                 playGameServicesProvider.showLeaderBoard()
             }, R.drawable.ic_trophy_black_48dp))
             sideBarRows.add(RowDiv(true))
+            sideBarRows.add(RowSettings(ctx.resources.getString(R.string.achievements), "", View.OnClickListener {
+                playGameServicesProvider.showAchievements()
+            }, R.drawable.ic_grade_24dp))
+            sideBarRows.add(RowDiv(true))
             sideBarRows.add(helpRow)
             sideBarRows.add(RowDiv(true))
             sideBarRows.add(RowSettings(ctx.resources.getString(R.string.sign_out), "", View.OnClickListener {

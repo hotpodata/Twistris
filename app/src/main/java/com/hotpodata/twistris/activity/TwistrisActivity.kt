@@ -55,6 +55,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
 
     val REQUEST_LEADERBOARD = 1
+    val REQUEST_ACHIEVEMENTS = 2
 
     val STORAGE_KEY_AUTO_SIGN_IN = "STORAGE_KEY_AUTO_SIGN_IN"
 
@@ -977,6 +978,15 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         if (googleApiClient.isConnected) {
             startActivityForResult(Games.Leaderboards.getLeaderboardIntent(googleApiClient,
                     getString(R.string.leaderboard_alltimehighscores_id)), REQUEST_LEADERBOARD);
+        } else {
+            Toast.makeText(this, R.string.you_must_be_signed_in, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun showAchievements() {
+        if (isLoggedIn()) {
+            startActivityForResult(Games.Achievements.getAchievementsIntent(googleApiClient),
+                    REQUEST_ACHIEVEMENTS);
         } else {
             Toast.makeText(this, R.string.you_must_be_signed_in, Toast.LENGTH_SHORT).show()
         }
