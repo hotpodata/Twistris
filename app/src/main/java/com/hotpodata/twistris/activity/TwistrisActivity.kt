@@ -623,7 +623,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
         val animatorSet = AnimatorSet()
         animatorSet.playSequentially(genTwistAnimation(), genHorizDropAnimation(animGame), genHorizFlyInFromRightAnimation(animGame, animGame.currentLevel != game.currentLevel))
-        if (game.twistCount <= 1) {
+        if (game.twistCount <= 1 && launchCount < 3) {
             animatorSet.setDuration(3000)
         }
         animatorSet.addListener(object : AnimatorListenerAdapter() {

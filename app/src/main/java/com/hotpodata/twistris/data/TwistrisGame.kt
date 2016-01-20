@@ -16,14 +16,13 @@ import java.util.*
  */
 class TwistrisGame() {
 
-
     val VERT_W = 8
     val VERT_H = 16
     val HORI_W = 12
     val HORI_H = 8
 
     val MAX_LEVEL = 10
-    val LEVEL_STEP = 2
+    val LEVEL_STEP = 6
 
     var currentRowsDestroyed = 0
     var currentScore = 0
