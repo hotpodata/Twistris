@@ -19,7 +19,7 @@ import java.util.*
 /**
  * Created by jdrotos on 11/7/15.
  */
-class TwistrisSideBarAdapter(ctx: Context, val gameController: IGameController, val playGameServicesProvider: IGooglePlayGameServicesProvider, val analytics: IAnalyticsProvider?) : SideBarAdapter(ctx, analytics, App.Factory.createApp(ctx, HotPoDataApps.TWISTRIS), false, false, Libraries.AutoFitTextView, Libraries.RxAndroid, Libraries.RxJava, Libraries.RxKotlin, Libraries.Timber) {
+class TwistrisSideBarAdapter(ctx: Context, val gameController: IGameController, val playGameServicesProvider: IGooglePlayGameServicesProvider, val analytics: IAnalyticsProvider?) : SideBarAdapter(ctx, analytics, App.Factory.createApp(ctx, HotPoDataApps.TWISTRIS), false, false, Libraries.AutoFitTextView, Libraries.Picasso, Libraries.RxAndroid, Libraries.RxJava, Libraries.RxKotlin, Libraries.Timber) {
     private val ROW_TYPE_SIGN_IN = 100
 
     init{

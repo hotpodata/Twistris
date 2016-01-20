@@ -24,6 +24,7 @@
     <string name="reset_game">Reset Game</string>
     <string name="start_over">Start Over</string>
     <string name="start">Start</string>
+    <string name="got_it">Got It!</string>
     <string name="game_over">Game Over!</string>
     <string name="play_again">Play Again</string>
     <string name="next_piece">Next\nPiece</string>
@@ -40,10 +41,11 @@
     <string name="welcome_to_twistris">Welcome to Twistris!</string>
     <string name="a_classic_with_a_twist">The classic game with a twist.</string>
     <string name="how_it_works">How it works</string>
-    <string name="pieces_move_right_to_left">Pieces move from right to left.</string>
-    <string name="when_the_number_stuck">When the number of pieces stuck to the left equals the level number, the horizontal board twists clockwise.</string>
-    <string name="pieces_fall">After rotation, pieces that were stuck to the left of the horizontal board, now fall onto the vertical board in reverse order.</string>
-    <string name="lines_are_cleared">Lines are cleared, points are gained, repeat!</string>
+    <string name="help_pieces_move_right_to_left">Pieces move from right to left.</string>
+    <string name="help_rotation">When a piece hits the left wall the board rotates clockwise.</string>
+    <string name="help_controls">Control the vertical position and rotation of the piece with the buttons or by dragging the piece.</string>
+    <string name="help_level">On higher levels you must play multiple pieces before rotation.</string>
+    <string name="help_clear_lines">Lines are cleared, points are gained, repeat!</string>
 
     <string name="achievements_logged_out_message">Log in to track your achievements!</string>
 </resources>

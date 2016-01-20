@@ -5,157 +5,14 @@
     android:background="#FFFFFF"
     android:orientation="vertical">
 
-    <ScrollView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/help_recycler"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
-
-            <!-- TODO: Maybe just make this a recycler view...-->
-            <TextView
-                android:id="@+id/title_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/keyline_one"
-                android:layout_marginRight="@dimen/keyline_one"
-                android:layout_marginTop="12dp"
-                android:gravity="center_horizontal"
-                android:text="@string/welcome_to_twistris"
-                android:textSize="32dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/keyline_one"
-                android:layout_marginRight="@dimen/keyline_one"
-                android:gravity="center_horizontal"
-                android:text="@string/a_classic_with_a_twist"
-                android:textSize="12dp" />
-
-            <!--<TextView-->
-            <!--android:id="@android:id/text1"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_centerVertical="true"-->
-            <!--android:layout_marginLeft="@dimen/keyline_one"-->
-            <!--android:layout_marginTop="@dimen/keyline_one"-->
-            <!--android:gravity="center_vertical"-->
-            <!--android:singleLine="true"-->
-            <!--android:text="@string/how_it_works"-->
-            <!--android:textAllCaps="true"-->
-            <!--android:textColor="@color/colorAccent"-->
-            <!--android:textSize="12dp"-->
-            <!--android:textStyle="bold" />-->
-
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/keyline_two"
-                android:layout_marginRight="@dimen/keyline_two"
-                android:layout_marginTop="@dimen/keyline_one">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/material_grey"
-                    android:minHeight="128dp"
-                    android:minWidth="256dp"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="@color/material_blue_grey"
-                    android:padding="8dp"
-                    android:text="@string/pieces_move_right_to_left"
-                    android:textColor="@color/white" />
-
-            </FrameLayout>
-
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/keyline_two"
-                android:layout_marginRight="@dimen/keyline_two"
-                android:layout_marginTop="@dimen/keyline_one">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/material_grey"
-                    android:minHeight="128dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="@color/material_blue_grey"
-                    android:padding="8dp"
-                    android:text="@string/when_the_number_stuck"
-                    android:textColor="@color/white" />
-
-            </FrameLayout>
-
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/keyline_two"
-                android:layout_marginRight="@dimen/keyline_two"
-                android:layout_marginTop="@dimen/keyline_one">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/material_grey"
-                    android:minHeight="128dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="@color/material_blue_grey"
-                    android:padding="8dp"
-                    android:text="@string/pieces_fall"
-                    android:textColor="@color/white" />
-
-            </FrameLayout>
-
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/keyline_two"
-                android:layout_marginRight="@dimen/keyline_two"
-                android:layout_marginTop="@dimen/keyline_one">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/material_grey"
-                    android:minHeight="128dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="@color/material_blue_grey"
-                    android:padding="8dp"
-                    android:text="@string/lines_are_cleared"
-                    android:textColor="@color/white" />
-
-            </FrameLayout>
-
-
-        </LinearLayout>
-    </ScrollView>
+        android:layout_height="0dp"
+        android:layout_gravity="start"
+        android:layout_weight="1"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -172,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginRight="@dimen/keyline_one"
-            android:text="@string/start"
+            android:text="@string/got_it"
             android:textColor="@color/colorAccent" />
     </LinearLayout>
 </LinearLayout>

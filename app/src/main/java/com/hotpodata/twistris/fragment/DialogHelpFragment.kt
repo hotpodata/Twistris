@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import com.hotpodata.twistris.R
+import com.hotpodata.twistris.adapter.TwistrisHelpAdapter
 import kotlinx.android.synthetic.main.fragment_dialog_help.*
 import timber.log.Timber
 
@@ -48,6 +50,8 @@ class DialogHelpFragment : DialogFragment() {
             Timber.d("Calling dismiss()")
             dismiss()
         }
+        help_recycler.adapter = TwistrisHelpAdapter(context)
+        help_recycler.layoutManager = LinearLayoutManager(context)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
