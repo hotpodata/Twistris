@@ -55,6 +55,8 @@ import java.util.concurrent.TimeUnit
 class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragment.IHelpDialogListener, IGooglePlayGameServicesProvider, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
+    val STATE_GAME = "STATE_GAME"
+
     val REQUEST_LEADERBOARD = 1
     val REQUEST_ACHIEVEMENTS = 2
 
@@ -254,9 +256,9 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             }
         }
         pause_btn.setOnClickListener {
-            if(paused){
+            if (paused) {
                 resumeGame()
-            }else{
+            } else {
                 pauseGame()
             }
         }
@@ -285,11 +287,22 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         }
 
 
+        if (savedInstanceState == null || !savedInstanceState.containsKey(STATE_GAME)) {
+            showHelp()
+            launchCount++
+        } else {
+            TwistrisGame.Serializer.gameFromBundle(savedInstanceState.getBundle(STATE_GAME))?.let {
+                game = it
+                Timber.d("Game from SAVED INSTANCE STATE:" + TwistrisGame.Serializer.gameToJson(game).toString())
+            }
+        }
+
         gridbinderview_horizontal.grid = game.boardHoriz
         gridbinderview_horizontal.blockDrawer = GridOfColorsBlockDrawer
         gridbinderview_vertical.blockDrawer = GridOfColorsBlockDrawer
         gridbinderview_upcomingpiece.blockDrawer = GridOfColorsBlockDrawer
 
+        bindGameInfo()
         bindHorizGridView()
         bindVertGridView()
 
@@ -304,7 +317,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                         touchStartY = motionEvent.y
                         blockHeight = gridView.getSubGridPosition(Grid(1, 1), 0, 0).height()
                         motionEventConsumed = gridView.getSubGridPosition(game.activePiece, game.activeXOffset, game.activeYOffset).contains(motionEvent.x, motionEvent.y)
-                        if(motionEventConsumed){
+                        if (motionEventConsumed) {
                             try {
                                 AnalyticsMaster?.getTracker(this)?.let {
                                     it.send(HitBuilders.EventBuilder()
@@ -339,10 +352,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             }
         }
 
-        if (savedInstanceState == null) {
-            showHelp()
-            launchCount++
-        }
+
 
         game_container.sizeChangeListener = object : SizeAwareFrameLayout.ISizeChangeListener {
             override fun onSizeChange(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -401,6 +411,11 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
     override fun onStop() {
         super.onStop()
         googleApiClient.disconnect()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.putBundle(STATE_GAME, TwistrisGame.Serializer.gameToBundle(game))
+        super.onSaveInstanceState(outState)
     }
 
 
@@ -644,7 +659,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     achieve(R.string.achievement_three_line_ninja_time);
                 }
 
-                if(game.currentLevel > animGame.currentLevel){
+                if (game.currentLevel > animGame.currentLevel) {
                     try {
                         AnalyticsMaster?.getTracker(this@TwistrisActivity)?.let {
                             it.send(HitBuilders.EventBuilder()
@@ -659,7 +674,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     }
                 }
 
-                if(game.currentRowsDestroyed > animGame.currentRowsDestroyed){
+                if (game.currentRowsDestroyed > animGame.currentRowsDestroyed) {
                     try {
                         AnalyticsMaster?.getTracker(this@TwistrisActivity)?.let {
                             it.send(HitBuilders.EventBuilder()

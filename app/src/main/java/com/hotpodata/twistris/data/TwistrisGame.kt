@@ -1,8 +1,13 @@
 package com.hotpodata.twistris.data
 
+import android.graphics.Color
+import android.os.Bundle
+import android.text.TextUtils
 import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.twistris.utils.TetrisFactory
+import org.json.JSONArray
+import org.json.JSONObject
 import timber.log.Timber
 import java.util.*
 
@@ -10,6 +15,7 @@ import java.util.*
  * Created by jdrotos on 1/3/16.
  */
 class TwistrisGame() {
+
 
     val VERT_W = 8
     val VERT_H = 16
@@ -228,10 +234,138 @@ class TwistrisGame() {
     }
 
     fun gameNeedsTwist(): Boolean {
-        return !peekMoveActiveLeft() && horizPieces.size == currentLevel
+        return !peekMoveActiveLeft() && horizPieces.size >= currentLevel
     }
 
     fun gameNeedsNextPiece(): Boolean {
         return horizPieces.size == 0 || !peekMoveActiveLeft()
+    }
+
+    /**
+     * SERIALIZER
+     */
+
+    object Serializer {
+        val JSON_KEY_ROWS_DESTROYED = "rowsDestroyed"
+        val JSON_KEY_SCORE = "score"
+        val JSON_KEY_LEVEL = "level"
+        val JSON_KEY_TWISTS = "twists"
+        val JSON_KEY_GAMEOVER = "gameover"
+        val JSON_KEY_VERTBOARD = "vertBoard"
+        val JSON_KEY_HORIZBOARD = "horizBoard"
+        val JSON_KEY_XOFF = "xOffset"
+        val JSON_KEY_YOFF = "yOffset"
+        val JSON_KEY_UPCOMING = "upcoming"
+        val JSON_KEY_HORIZ_PIECES = "horizPieces"
+
+        val JSON_KEY_HORIZ_PIECE_GRID = "horizPieceGrid"
+        val JSON_KEY_HORIZ_PIECE_X = "horizPieceX"
+        val JSON_KEY_HORIZ_PIECE_Y = "horizPieceY"
+
+
+        fun gameToJson(game: TwistrisGame): JSONObject {
+            var chainjson = JSONObject()
+            chainjson.put(JSON_KEY_ROWS_DESTROYED, game.currentRowsDestroyed)
+            chainjson.put(JSON_KEY_SCORE, game.currentScore)
+            chainjson.put(JSON_KEY_LEVEL, game.currentLevel)
+            chainjson.put(JSON_KEY_TWISTS, game.twistCount)
+            chainjson.put(JSON_KEY_GAMEOVER, game.gameIsOver)
+            chainjson.put(JSON_KEY_VERTBOARD, gridToJson(game.boardVert))
+            chainjson.put(JSON_KEY_HORIZBOARD, gridToJson(game.boardHoriz))
+            chainjson.put(JSON_KEY_XOFF, game.activeXOffset)
+            chainjson.put(JSON_KEY_YOFF, game.activeYOffset)
+            chainjson.put(JSON_KEY_UPCOMING, gridToJson(game.upcomingPiece))
+            var jsonArrHoriz = JSONArray()
+            for (p in game.horizPieces) {
+                var horiP = JSONObject()
+                horiP.put(JSON_KEY_HORIZ_PIECE_GRID, gridToJson(p.first))
+                horiP.put(JSON_KEY_HORIZ_PIECE_X, p.second.first)
+                horiP.put(JSON_KEY_HORIZ_PIECE_Y, p.second.second)
+                jsonArrHoriz.put(horiP)
+            }
+            chainjson.put(JSON_KEY_HORIZ_PIECES, jsonArrHoriz)
+            return chainjson
+        }
+
+        fun gameFromJson(gameJsonStr: String): TwistrisGame? {
+            try {
+                if (!TextUtils.isEmpty(gameJsonStr)) {
+                    var game = TwistrisGame()
+                    var gamejson = JSONObject(gameJsonStr)
+                    game.currentRowsDestroyed =gamejson.getInt(JSON_KEY_ROWS_DESTROYED)
+                    game.currentScore = gamejson.getInt(JSON_KEY_SCORE)
+                    game.currentLevel = gamejson.getInt(JSON_KEY_LEVEL)
+                    game.twistCount = gamejson.getInt(JSON_KEY_TWISTS)
+                    game.gameIsOver = gamejson.getBoolean(JSON_KEY_GAMEOVER)
+                    game.boardVert = gridFromJson(gamejson.getJSONObject(JSON_KEY_VERTBOARD))
+                    game.boardHoriz = gridFromJson(gamejson.getJSONObject(JSON_KEY_HORIZBOARD))
+                    game.activeXOffset = gamejson.getInt(JSON_KEY_XOFF)
+                    game.activeYOffset = gamejson.getInt(JSON_KEY_YOFF)
+                    game.upcomingPiece = gridFromJson(gamejson.getJSONObject(JSON_KEY_UPCOMING))
+
+                    game.horizPieces.clear()
+                    var horizPiecesJsonArr = gamejson.getJSONArray(JSON_KEY_HORIZ_PIECES)
+                    for(i in 0..(horizPiecesJsonArr.length() - 1)){
+                        var obj = horizPiecesJsonArr.getJSONObject(i)
+                        var grid = gridFromJson(obj.getJSONObject(JSON_KEY_HORIZ_PIECE_GRID))
+                        var x = obj.getInt(JSON_KEY_HORIZ_PIECE_X)
+                        var y = obj.getInt(JSON_KEY_HORIZ_PIECE_Y)
+                        game.horizPieces.add(Pair(grid,Pair(x,y)))
+                    }
+
+                    return game
+                }
+            } catch(ex: Exception) {
+                Timber.e(ex, "gameFromJson Fail")
+            }
+            return null
+        }
+
+        val JSONKEY_WIDTH = "WIDTH"
+        val JSONKEY_HEIGHT = "HEIGHT"
+        val JSONKEY_VALUES = "VALS"
+        val JSON_EMPTY_COLOR = Color.TRANSPARENT
+
+        fun gridToJson(grid: Grid): JSONObject {
+            var json = JSONObject()
+            json.put(JSONKEY_WIDTH, grid.width)
+            json.put(JSONKEY_HEIGHT, grid.height)
+            var vals = JSONArray()
+            for (i in 0..grid.width - 1) {
+                for (j in 0..grid.height - 1) {
+                    vals.put((grid.at(i, j) as Int?) ?: JSON_EMPTY_COLOR)
+                }
+            }
+            json.put(JSONKEY_VALUES, vals)
+            return json
+        }
+
+        fun gridFromJson(json: JSONObject): Grid {
+            val w = json.getInt(JSONKEY_WIDTH)
+            val h = json.getInt(JSONKEY_HEIGHT)
+            var vals = json.getJSONArray(JSONKEY_VALUES)
+            var grid = Grid(w, h)
+            var valsInd = 0
+            for (i in 0..grid.width - 1) {
+                for (j in 0..grid.height - 1) {
+                    grid.slots[i][j] = if (vals[valsInd] == JSON_EMPTY_COLOR) null else vals[valsInd]
+                    valsInd++
+                }
+            }
+            return grid
+        }
+
+        val BUNDLE_KEY_GAME = "BUNDLE_KEY_GAME"
+
+        fun gameToBundle(game: TwistrisGame, bundle: Bundle = Bundle()): Bundle {
+            bundle.putString(BUNDLE_KEY_GAME, TwistrisGame.Serializer.gameToJson(game).toString())
+            return bundle
+        }
+
+        fun gameFromBundle(bundle: Bundle?): TwistrisGame? {
+            return bundle?.getString(BUNDLE_KEY_GAME)?.let {
+                TwistrisGame.Serializer.gameFromJson(it)
+            }
+        }
     }
 }
