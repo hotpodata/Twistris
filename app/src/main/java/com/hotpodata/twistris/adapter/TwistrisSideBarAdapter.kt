@@ -9,6 +9,7 @@ import com.hotpodata.common.adapter.SideBarAdapter
 import com.hotpodata.common.data.App
 import com.hotpodata.common.enums.HotPoDataApps
 import com.hotpodata.common.enums.Libraries
+import com.hotpodata.common.interfaces.IAnalyticsProvider
 import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.viewholder.SignInViewHolder
 import com.hotpodata.twistris.interfaces.IGameController
@@ -18,7 +19,7 @@ import java.util.*
 /**
  * Created by jdrotos on 11/7/15.
  */
-class TwistrisSideBarAdapter(ctx: Context, val gameController: IGameController, val playGameServicesProvider: IGooglePlayGameServicesProvider) : SideBarAdapter(ctx, App.Factory.createApp(ctx, HotPoDataApps.TWISTRIS), false, false, Libraries.AutoFitTextView, Libraries.RxAndroid, Libraries.RxJava, Libraries.RxKotlin, Libraries.Timber) {
+class TwistrisSideBarAdapter(ctx: Context, val gameController: IGameController, val playGameServicesProvider: IGooglePlayGameServicesProvider, val analytics: IAnalyticsProvider?) : SideBarAdapter(ctx, analytics, App.Factory.createApp(ctx, HotPoDataApps.TWISTRIS), false, false, Libraries.AutoFitTextView, Libraries.RxAndroid, Libraries.RxJava, Libraries.RxKotlin, Libraries.Timber) {
     private val ROW_TYPE_SIGN_IN = 100
 
     init{

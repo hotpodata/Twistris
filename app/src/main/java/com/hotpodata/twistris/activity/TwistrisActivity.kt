@@ -29,6 +29,7 @@ import com.hotpodata.blocklib.Grid
 import com.hotpodata.blocklib.GridHelper
 import com.hotpodata.blocklib.view.GridBinderView
 import com.hotpodata.common.utils.HashUtils
+import com.hotpodata.twistris.AnalyticsMaster
 import com.hotpodata.twistris.BuildConfig
 import com.hotpodata.twistris.R
 import com.hotpodata.twistris.adapter.TwistrisSideBarAdapter
@@ -357,7 +358,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
     fun setUpLeftDrawer() {
         if (sideBarAdapter == null) {
-            sideBarAdapter = TwistrisSideBarAdapter(this, this, this)
+            sideBarAdapter = TwistrisSideBarAdapter(this, this, this, AnalyticsMaster)
             sideBarAdapter?.setAccentColor(android.support.v4.content.ContextCompat.getColor(this@TwistrisActivity, R.color.colorPrimary))
             left_drawer.adapter = sideBarAdapter
             left_drawer.layoutManager = LinearLayoutManager(this)
