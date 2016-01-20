@@ -7,7 +7,7 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 19
         applicationId "com.hotpodata.twistris"
         targetSdkVersion 23
         versionCode 1
