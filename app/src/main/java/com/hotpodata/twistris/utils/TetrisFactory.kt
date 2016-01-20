@@ -25,9 +25,9 @@ object TetrisFactory {
     fun setupResColors(ctx: Context){
         boxColor = ctx.resources.getColor(R.color.material_amber)
         jColor = ctx.resources.getColor(R.color.material_green)
-        lColor = ctx.resources.getColor(R.color.material_deep_orange)
-        barColor = ctx.resources.getColor(R.color.material_deep_purple)
-        sColor = ctx.resources.getColor(R.color.material_blue_grey)
+        lColor = ctx.resources.getColor(R.color.material_orange)
+        barColor = ctx.resources.getColor(R.color.material_teal)
+        sColor = ctx.resources.getColor(R.color.material_pink)
         zColor = ctx.resources.getColor(R.color.material_red)
         tColor = ctx.resources.getColor(R.color.material_purple)
 
