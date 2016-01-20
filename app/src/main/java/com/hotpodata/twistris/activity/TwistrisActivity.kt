@@ -21,6 +21,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.analytics.HitBuilders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.games.Games
@@ -54,10 +55,10 @@ import java.util.concurrent.TimeUnit
 class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragment.IHelpDialogListener, IGooglePlayGameServicesProvider, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
-
     val REQUEST_LEADERBOARD = 1
     val REQUEST_ACHIEVEMENTS = 2
 
+    val STORAGE_KEY_LAUNCH_COUNT = "STORAGE_KEY_LAUNCH_COUNT"
     val STORAGE_KEY_AUTO_SIGN_IN = "STORAGE_KEY_AUTO_SIGN_IN"
 
     val FTAG_HELP = "FTAG_HELP"
@@ -70,6 +71,20 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
     //This is the game state, if we kill the game and come back, this should reflect where we are
     var game = TwistrisGame()
+
+    //Launch stats
+    var launchCount: Int
+        set(launches: Int) {
+            var sharedPref = getPreferences(Context.MODE_PRIVATE);
+            with(sharedPref.edit()) {
+                putInt(STORAGE_KEY_LAUNCH_COUNT, launches);
+                commit()
+            }
+        }
+        get() {
+            var sharedPref = getPreferences(Context.MODE_PRIVATE);
+            return sharedPref.getInt(STORAGE_KEY_LAUNCH_COUNT, 0)
+        }
 
     //Sign in stuff
     val RC_SIGN_IN = 9001
@@ -151,6 +166,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             override fun onDrawerOpened(drawerView: View?) {
                 pauseGame()
                 drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+                try {
+                    AnalyticsMaster?.getTracker(this@TwistrisActivity)?.let {
+                        it.send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_OPEN_DRAWER)
+                                .build());
+                    }
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Error recording analytics event.")
+                }
             }
 
             override fun onDrawerClosed(drawerView: View?) {
@@ -164,33 +189,88 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         up_btn.setOnClickListener {
             if (allowGameActions() && game.actionMoveActiveUp()) {
                 bindHorizGridView()
+                try {
+                    AnalyticsMaster?.getTracker(this)?.let {
+                        it.send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_UP)
+                                .build());
+                    }
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Error recording analytics event.")
+                }
             }
         }
         down_btn.setOnClickListener {
             if (allowGameActions() && game.actionMoveActiveDown()) {
                 bindHorizGridView()
+                try {
+                    AnalyticsMaster?.getTracker(this)?.let {
+                        it.send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_DOWN)
+                                .build());
+                    }
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Error recording analytics event.")
+                }
             }
         }
         rotate_left_btn.setOnClickListener {
             if (allowGameActions() && game.actionRotateActiveLeft()) {
                 bindHorizGridView()
+                try {
+                    AnalyticsMaster?.getTracker(this)?.let {
+                        it.send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_ROT_LEFT)
+                                .build());
+                    }
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Error recording analytics event.")
+                }
             }
         }
         rotate_right_btn.setOnClickListener {
             if (allowGameActions() && game.actionRotateActiveRight()) {
                 bindHorizGridView()
+                try {
+                    AnalyticsMaster?.getTracker(this)?.let {
+                        it.send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_ROT_RIGHT)
+                                .build());
+                    }
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Error recording analytics event.")
+                }
             }
         }
         fire_btn.setOnClickListener {
             if (allowGameActions()) {
                 var animGame = TwistrisGame(game)
                 performActionFire(animGame)
+
             }
         }
         pause_btn.setOnClickListener {
-            paused = !paused
+            if(paused){
+                resumeGame()
+            }else{
+                pauseGame()
+            }
         }
         stopped_start_over_btn.setOnClickListener {
+            try {
+                AnalyticsMaster?.getTracker(this)?.let {
+                    it.send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                            .setAction(AnalyticsMaster.ACTION_START_OVER)
+                            .build());
+                }
+            } catch(ex: Exception) {
+                Timber.e(ex, "Error recording analytics event.")
+            }
             resetGame()
             resumeGame()
         }
@@ -224,6 +304,18 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                         touchStartY = motionEvent.y
                         blockHeight = gridView.getSubGridPosition(Grid(1, 1), 0, 0).height()
                         motionEventConsumed = gridView.getSubGridPosition(game.activePiece, game.activeXOffset, game.activeYOffset).contains(motionEvent.x, motionEvent.y)
+                        if(motionEventConsumed){
+                            try {
+                                AnalyticsMaster?.getTracker(this)?.let {
+                                    it.send(HitBuilders.EventBuilder()
+                                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                            .setAction(AnalyticsMaster.ACTION_DRAG)
+                                            .build());
+                                }
+                            } catch(ex: Exception) {
+                                Timber.e(ex, "Error recording analytics event.")
+                            }
+                        }
                     }
                     MotionEvent.ACTION_MOVE -> {
                         var dif = touchStartY - motionEvent.y
@@ -249,6 +341,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
         if (savedInstanceState == null) {
             showHelp()
+            launchCount++
         }
 
         game_container.sizeChangeListener = object : SizeAwareFrameLayout.ISizeChangeListener {
@@ -432,6 +525,18 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             }
             unsubscribeFromTicker()
             bindStoppedContainer()
+            try {
+                AnalyticsMaster?.getTracker(this)?.let {
+                    it.send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_EVENT)
+                            .setAction(AnalyticsMaster.EVENT_GAME_OVER)
+                            .setLabel(AnalyticsMaster.LABEL_LEVEL)
+                            .setValue(game.currentLevel.toLong())
+                            .build());
+                }
+            } catch(ex: Exception) {
+                Timber.e(ex, "Error recording analytics event.")
+            }
         } else if (game.gameNeedsTwist()) {
             Timber.d("tick - gameNeedsTwist")
             var animGame = TwistrisGame(game)
@@ -456,6 +561,17 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
 
     fun performActionFire(animGame: TwistrisGame) {
         unsubscribeFromTicker()
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_FIRE)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
+
         game.actionMoveActiveAllTheWayLeft()
         var anim = genFlyLeftAnim(animGame)
         anim.addListener(object : AnimatorListenerAdapter() {
@@ -477,6 +593,19 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
     }
 
     fun performActionTwist(animGame: TwistrisGame) {
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_EVENT)
+                        .setAction(AnalyticsMaster.EVENT_TWIST)
+                        .setLabel(AnalyticsMaster.LABEL_TWIST_COUNT)
+                        .setValue(game.twistCount.toLong())
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
+
         val animatorSet = AnimatorSet()
         animatorSet.playSequentially(genTwistAnimation(), genHorizDropAnimation(animGame), genHorizFlyInFromRightAnimation(animGame, animGame.currentLevel != game.currentLevel))
         if (game.twistCount <= 1) {
@@ -514,6 +643,38 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                 } else if (animGame.currentRowsDestroyed >= animGame.currentRowsDestroyed + 3) {
                     achieve(R.string.achievement_three_line_ninja_time);
                 }
+
+                if(game.currentLevel > animGame.currentLevel){
+                    try {
+                        AnalyticsMaster?.getTracker(this@TwistrisActivity)?.let {
+                            it.send(HitBuilders.EventBuilder()
+                                    .setCategory(AnalyticsMaster.CATEGORY_EVENT)
+                                    .setAction(AnalyticsMaster.EVENT_LEVEL_COMPLETE)
+                                    .setLabel(AnalyticsMaster.LABEL_LEVEL)
+                                    .setValue(game.currentLevel.toLong())
+                                    .build());
+                        }
+                    } catch(ex: Exception) {
+                        Timber.e(ex, "Error recording analytics event.")
+                    }
+                }
+
+                if(game.currentRowsDestroyed > animGame.currentRowsDestroyed){
+                    try {
+                        AnalyticsMaster?.getTracker(this@TwistrisActivity)?.let {
+                            it.send(HitBuilders.EventBuilder()
+                                    .setCategory(AnalyticsMaster.CATEGORY_EVENT)
+                                    .setAction(AnalyticsMaster.EVENT_ROWS_CLEARED)
+                                    .setLabel(AnalyticsMaster.LABEL_ROWS_CLEARED)
+                                    .setValue((game.currentRowsDestroyed - animGame.currentRowsDestroyed).toLong())
+                                    .build());
+                        }
+                    } catch(ex: Exception) {
+                        Timber.e(ex, "Error recording analytics event.")
+                    }
+                }
+
+
             }
         })
         actionAnimator = animatorSet
@@ -916,10 +1077,30 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
      */
     override fun pauseGame() {
         paused = true
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_PAUSE)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
     }
 
     override fun resumeGame() {
         paused = false
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_RESUME)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
     }
 
     override fun resetGame() {
@@ -947,6 +1128,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         if (!startFrag.isAdded) {
             startFrag.show(supportFragmentManager, FTAG_HELP)
         }
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_HELP)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
     }
 
     /**
@@ -962,6 +1153,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         signInClicked = true
         autoStartSignInFlow = true
         googleApiClient.connect();
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_SIGN_IN)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
     }
 
     override fun logout() {
@@ -973,6 +1174,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
             sideBarAdapter?.rebuildRowSet()
         }
         bindStoppedContainer()
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_SIGN_OUT)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
     }
 
     override fun showLeaderBoard() {
@@ -982,6 +1193,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
         } else {
             Toast.makeText(this, R.string.you_must_be_signed_in, Toast.LENGTH_SHORT).show()
         }
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_LEADERBOARD)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
+        }
     }
 
     override fun showAchievements() {
@@ -990,6 +1211,16 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     REQUEST_ACHIEVEMENTS);
         } else {
             Toast.makeText(this, R.string.you_must_be_signed_in, Toast.LENGTH_SHORT).show()
+        }
+        try {
+            AnalyticsMaster?.getTracker(this)?.let {
+                it.send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_ACHIEVEMENTS)
+                        .build());
+            }
+        } catch(ex: Exception) {
+            Timber.e(ex, "Error recording analytics event.")
         }
     }
 
