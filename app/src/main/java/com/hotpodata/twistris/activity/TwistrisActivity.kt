@@ -508,7 +508,7 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     achieve(R.string.achievement_double_helix);
                 }
                 if (animGame.currentRowsDestroyed == animGame.currentRowsDestroyed + 4) {
-                    achieve(R.string.achievement_four_line_so_devine);
+                    achieve(R.string.achievement_four_line_so_divine);
                 } else if (animGame.currentRowsDestroyed >= animGame.currentRowsDestroyed + 3) {
                     achieve(R.string.achievement_three_line_ninja_time);
                 }

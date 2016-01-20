@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--<string name="app_id">573770405666</string>-->
+    <!--<string name="leaderboard_alltimehighscores_id">CgkIoq6Gu9kQEAIQAg</string>-->
+
+    <!--&lt;!&ndash;TODO: USE VALID IDS HERE &ndash;&gt;-->
+    <!--<string name="achievement_twisted_like_fishing_line">A</string>-->
+    <!--<string name="achievement_double_helix">A</string>-->
+    <!--<string name="achievement_four_line_so_devine">A</string>-->
+    <!--<string name="achievement_three_line_ninja_time">A</string>-->
+    <!--<string name="achievement_twisted_not_stirred">A</string>-->
+    <!--<string name="achievement_plot_twist">A</string>-->
+
+
     <string name="app_id">573770405666</string>
     <string name="leaderboard_alltimehighscores_id">CgkIoq6Gu9kQEAIQAg</string>
 
-    <!--TODO: USE VALID IDS HERE -->
-    <string name="achievement_twisted_like_fishing_line">A</string>
-    <string name="achievement_double_helix">A</string>
-    <string name="achievement_four_line_so_devine">A</string>
-    <string name="achievement_three_line_ninja_time">A</string>
-    <string name="achievement_twisted_not_stirred">A</string>
-    <string name="achievement_plot_twist">A</string>
+    <string name="achievement_double_helix">CgkIoq6Gu9kQEAIQBA</string>
+    <string name="achievement_plot_twist">CgkIoq6Gu9kQEAIQBQ</string>
+    <string name="achievement_twisted_like_fishing_line">CgkIoq6Gu9kQEAIQBg</string>
+    <string name="achievement_twisted_not_stirred">CgkIoq6Gu9kQEAIQBw</string>
+    <string name="achievement_four_line_so_divine">CgkIoq6Gu9kQEAIQCA</string>
+    <string name="achievement_three_line_ninja_time">CgkIoq6Gu9kQEAIQCQ</string>
+
+
 </resources>
