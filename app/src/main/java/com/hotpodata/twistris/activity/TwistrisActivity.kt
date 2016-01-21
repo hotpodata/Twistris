@@ -40,7 +40,7 @@ import com.hotpodata.twistris.interfaces.IGameController
 import com.hotpodata.twistris.interfaces.IGooglePlayGameServicesProvider
 import com.hotpodata.twistris.utils.BaseGameUtils
 import com.hotpodata.twistris.utils.GridOfColorsBlockDrawer
-import com.hotpodata.twistris.view.SizeAwareFrameLayout
+import com.hotpodata.common.view.SizeAwareFrameLayout
 import kotlinx.android.synthetic.main.activity_twistris.*
 import rx.Observable
 import rx.Subscription

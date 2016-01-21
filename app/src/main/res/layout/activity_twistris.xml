@@ -123,7 +123,7 @@
                 app:adSize="BANNER"
                 app:adUnitId="@string/banner_ad_unit_id" />
 
-            <com.hotpodata.twistris.view.SizeAwareFrameLayout
+            <com.hotpodata.common.view.SizeAwareFrameLayout
                 android:id="@+id/game_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -291,7 +291,7 @@
 
                     </LinearLayout>
                 </FrameLayout>
-            </com.hotpodata.twistris.view.SizeAwareFrameLayout>
+            </com.hotpodata.common.view.SizeAwareFrameLayout>
 
             <LinearLayout
                 android:id="@+id/stopped_container"
