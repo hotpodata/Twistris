@@ -9,4 +9,8 @@
     <dimen name="ad_view_height">50dp</dimen>
 
     <dimen name="arrow_size">128dp</dimen>
+
+    <dimen name="fab_bottom_margin">0dp</dimen>
+    <dimen name="fab_borderwidth">0dp</dimen>
+    <dimen name="fab_elevation">0dp</dimen>
 </resources>

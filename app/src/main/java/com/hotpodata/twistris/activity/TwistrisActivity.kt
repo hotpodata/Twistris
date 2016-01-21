@@ -363,6 +363,11 @@ class TwistrisActivity : AppCompatActivity(), IGameController, DialogHelpFragmen
                     val vertBoardHtoWRatio = game.VERT_H / game.VERT_W.toFloat()
                     var vertBoardWidth = w - 2 * resources.getDimensionPixelSize(R.dimen.btn_container_width)
                     var vertBoardHeight = vertBoardHtoWRatio * vertBoardWidth
+                    if (vertBoardHeight > h) {
+                        vertBoardHeight = h.toFloat()
+                        vertBoardWidth = (vertBoardHeight * (1 / vertBoardHtoWRatio)).toInt()
+                    }
+
                     if (vertBoardWidth > availableHoriBoardHeight) {
                         vertBoardWidth = availableHoriBoardHeight
                         vertBoardHeight = vertBoardHtoWRatio * vertBoardWidth
